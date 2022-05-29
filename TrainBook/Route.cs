@@ -19,15 +19,18 @@ namespace TrainBook
             DepartureDate = DD;
             ArrivalDate = AD;
             TrainsId = triansId;
+            this.CheckActivity();
         }
         public void CheckActivity()
         {
             DateTime Now = DateTime.Now;
-            if ((DepartureDate < Now) && (Now < ArrivalDate))
+            if ((DepartureDate <= Now) && (Now <= ArrivalDate))
             {
                 IsActiveNow = true;
             }
             else IsActiveNow = false;
         }
+
+
     }
 }

@@ -16,7 +16,7 @@ namespace TrainBook
         private readonly string routePath = $"{Environment.CurrentDirectory}\\Route.json";
         private readonly string trainPath = $"{Environment.CurrentDirectory}\\Train.json";
         private BindingList<Route> AllRoutesList;
-        private BindingList<Route> AllActiveRoutesList;
+        private BindingList<Route> AllActiveRoutesList = new BindingList<Route>();
         private BindingList<Train> AllTrainsList;
         private FileIOService fileIOService;
         static private User activeUser = new User();
@@ -86,13 +86,119 @@ namespace TrainBook
                     }
                 }
             }
+            else
+            {
+                AllRoutesList = new BindingList<Route>();
+            }
 
             ActualRoutes.ItemsSource = AllActiveRoutesList;
 
         }
         #endregion
 
+        #region internal service functions
+        private DateTime StringToDate(string dateStr)
+        {
+            dateStr = System.Text.RegularExpressions.Regex.Replace(dateStr, @"\s+", " ");
+            if (dateStr[0] == ' ') dateStr = dateStr.Remove(0, 1);
+            if (dateStr[dateStr.Length - 1] == ' ') dateStr = dateStr.Remove(dateStr.Length - 1, 1);
+            string tmp = "";
+            int iter = 0;
+            int step = 0;
+            int year = 0;
+            int month = 0;
+            int day = 0;
+            int hour = 0;
+            int minute = 0;
+            try
+            {
+                while (step != 4)
+                {
+                    switch (step)
+                    {
+                        case 0:
+                            {
+                                if (iter > 2) throw new Exception();
+                                if (dateStr[iter] != '/')
+                                {
+                                    tmp += dateStr[iter];
+                                }
+                                else
+                                {
+                                    day = int.Parse(tmp);
+                                    if (day > 31) day = 1;
+                                    tmp = "";
+                                    step = 1;
+                                }
+                            }
+                            break;
+                        case 1:
+                            {
+                                if (iter > 7) throw new Exception();
+                                if (dateStr[iter] != '/')
+                                {
+                                    tmp += dateStr[iter];
+                                }
+                                else
+                                {
+                                    month = int.Parse(tmp);
+                                    if (month > 12) month = 12;
+                                    tmp = "";
+                                    step = 2;
+                                }
+                            }
+                            break;
+                        case 2:
+                            {
+                                if (iter > 14) throw new Exception();
+                                if (dateStr[iter] != ' ')
+                                {
+                                    tmp += dateStr[iter];
+                                }
+                                else
+                                {
+                                    if (tmp.Length > 4) year = 2022;
+                                    else year = int.Parse(tmp);
+                                    tmp = "";
+                                    step = 3;
 
+                                }
+                            }
+                            break;
+                        case 3:
+                            {
+                                if (iter > 16) throw new Exception();
+                                if (dateStr[iter] != ':')
+                                {
+                                    tmp += dateStr[iter];
+                                }
+                                else
+                                {
+                                    hour = int.Parse(tmp);
+                                    if (hour > 24) day = 1;
+                                    tmp = "";
+                                    step = 4;
+                                }
+                            }
+                            break;
+                        default:
+                            break;
+                    }
+                    iter++;
+                }
+                minute = int.Parse(("" + dateStr[dateStr.Length - 2] + dateStr[dateStr.Length - 1]));
+            }
+            catch (Exception)
+            {
+
+                return new DateTime();
+            }
+
+            return new DateTime(year, month, day, hour, minute, 0);
+        }
+
+
+        #endregion
 
         #region Interaction with window
 
@@ -191,22 +297,7 @@ namespace TrainBook
 
         #region switching and working the workspace
 
-        //Активация окна для сортировки актуальных маршрутов
-        private void Sort_actual_routes_Click(object sender, RoutedEventArgs e)
-        {
-            if (ActualRoutes.Visibility == Visibility.Visible)
-            {
-                ActualRoutes.Visibility = Visibility.Hidden;
-                ActualRoutesLbl.Visibility = Visibility.Hidden;
-            }
-            else
-            {
-                ActualRoutes.Visibility = Visibility.Visible;
-                ActualRoutesLbl.Visibility = Visibility.Visible;
-            }
-
-        }
-
+        #region add Route
         //Запрет на ввод лишних символов в поля с датой и временем
         private void DataPick_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
@@ -215,10 +306,227 @@ namespace TrainBook
                 e.Handled = true;
             }
         }
+        private void backToTableBtn_Click(object sender, RoutedEventArgs e)
+        {
+            ActualRoutes.Visibility = Visibility.Visible;
+            ActualRoutesLbl.Visibility = Visibility.Visible;
+            SortRoutPanel.Visibility = Visibility.Hidden;
+            NewRoutPanel.Visibility = Visibility.Hidden;
+        }
+
+        private void AddRoute_Click(object sender, RoutedEventArgs e)
+        {
+            NewRoute_Warning.Visibility = Visibility.Hidden;
+            NewRoutPanel.Visibility = Visibility.Visible;
+            ActualRoutesLbl.Visibility = Visibility.Hidden;
+            ActualRoutes.Visibility = Visibility.Hidden;
+            SortRoutPanel.Visibility = Visibility.Hidden;
+        }
+        //Добавление нового маршрута при нажатии на кнопку
+        private void AddRouteBtn_click(object sender, RoutedEventArgs e)
+        {
+            NewRoute_Warning.Visibility = Visibility.Hidden;
+            if ((DepPointTxb.Text != "") && (ArrPointTxb.Text != "") && (DepDateTxb.Text != "") && (ArrDateTxb.Text != "") && (TrainsIdTxb.Text != ""))
+            {
+                string DepPoint = DepPointTxb.Text;
+                string ArrPoint = ArrPointTxb.Text;
+                DateTime DepDate = StringToDate(DepDateTxb.Text);
+                DateTime ArrDate = StringToDate(ArrDateTxb.Text);
+                int TrainId = int.Parse(TrainsIdTxb.Text);
+
+                Route newRoute = new Route(DepPoint, ArrPoint, DepDate, ArrDate, TrainId);
+
+                if (!AllRoutesList.Contains(newRoute))
+                {
+                    AllRoutesList.Add(newRoute);
+                }
+                if ((newRoute.IsActiveNow == true) && (!AllActiveRoutesList.Contains(newRoute)))
+                {
+                    AllActiveRoutesList.Add(newRoute);
+                }
+                ClearAllTxb();
+            }
+            else
+            {
+                NewRoute_Warning.Visibility = Visibility.Visible;
+            }
+
+        }
+        #endregion
+
+        #region Sort Route
+        //Активация окна для сортировки актуальных маршрутов
+        
+        private void Sort_actual_routes_Click(object sender, RoutedEventArgs e)
+        {
+            NewRoute_Warning.Visibility = Visibility.Hidden;
+            NewRoutPanel.Visibility = Visibility.Hidden;
+            ActualRoutesLbl.Visibility = Visibility.Hidden;
+            ActualRoutes.Visibility = Visibility.Hidden;
+            SortRoutPanel.Visibility = Visibility.Visible;
+        }
+
+        private void isPointSortChB_Click(object sender, RoutedEventArgs e)
+        {
+            if (isPointSortChB.IsChecked == true)
+            {
+                PointSortPanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SortDepPointTxb.Clear();
+                SortArrPointTxb.Clear();
+                PointSortPanel.Visibility = Visibility.Hidden;
+            }
+        }
+
+        private void isDateSortChB_Click(object sender, RoutedEventArgs e)
+        {
+            if (isDateSortChB.IsChecked == true)
+            {
+                DateSortPanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                SortArrDateTxb.Clear();
+                SortDepDateTxb.Clear();
+                DateSortPanel.Visibility = Visibility.Hidden;
+            }
+        }
+
+        private void SortRouteBtn_Click(object sender, RoutedEventArgs e)
+        {
+            bool itFits = false;
+            BindingList<Route> SortedRoutes = new BindingList<Route>();
+            string DepPoint = "";
+            string ArrPoint = "";
+            DateTime DepDate = DateTime.MinValue;
+            DateTime ArrDate = DateTime.MinValue;
+
+            if (SortDepPointTxb.Text != "") DepPoint = SortDepPointTxb.Text;
+            if (SortArrPointTxb.Text != "") ArrPoint = SortArrPointTxb.Text;
+            if (SortDepDateTxb.Text != "") DepDate = StringToDate(SortDepDateTxb.Text);
+            if (SortArrDateTxb.Text != "") ArrDate = StringToDate(SortArrDateTxb.Text);
+
+            if ((SortDepPointTxb.Text == "") && (SortArrPointTxb.Text == ""))
+            {
+                isPointSortChB.IsChecked = false;
+                SortDepPointTxb.Clear();
+                SortArrPointTxb.Clear();
+                PointSortPanel.Visibility = Visibility.Hidden;
+            }
+            if ((SortDepDateTxb.Text == "") && (SortArrDateTxb.Text == ""))
+            {
+                isDateSortChB.IsChecked = false;
+                SortArrDateTxb.Clear();
+                SortDepDateTxb.Clear();
+                DateSortPanel.Visibility = Visibility.Hidden;
+            }
+
+            if ((isPointSortChB.IsChecked == true)&& (isDateSortChB.IsChecked == true))
+            {
+                foreach (Route route in AllActiveRoutesList)
+                {
+                    itFits = ((route.ArrivalPoint == ArrPoint) && (route.DeparturePoint == DepPoint)
+                        && (DepDate <= route.DepartureDate) && (route.ArrivalDate <= ArrDate)) ||
+
+                        ((ArrPoint == "") && (route.DeparturePoint == DepPoint)
+                        && (DepDate <= route.DepartureDate) && (route.ArrivalDate <= ArrDate)) ||
+                        ((route.ArrivalPoint == ArrPoint) && (DepPoint == "")
+                        && (DepDate <= route.DepartureDate) && (route.ArrivalDate <= ArrDate)) ||
+                        ((route.ArrivalPoint == ArrPoint) && (route.DeparturePoint == DepPoint)
+                        && (DepDate == DateTime.MinValue) && (route.ArrivalDate <= ArrDate)) ||
+                        ((route.ArrivalPoint == ArrPoint) && (route.DeparturePoint == DepPoint)
+                        && (DepDate <= route.DepartureDate) && (ArrDate == DateTime.MinValue)) ||
+
+                        ((ArrPoint == "") && (route.DeparturePoint == DepPoint)
+                        && (DepDate == DateTime.MinValue) && (route.ArrivalDate <= ArrDate)) ||
+                        ((ArrPoint == "") && (route.DeparturePoint == DepPoint)
+                        && (DepDate <= route.DepartureDate) && (ArrDate == DateTime.MinValue)) ||
+
+                        ((ArrPoint == route.ArrivalPoint) && (DepPoint == "")
+                        && (DepDate == DateTime.MinValue) && (route.ArrivalDate <= ArrDate)) ||
+                        ((ArrPoint == route.ArrivalPoint) && (DepPoint == "")
+                        && (DepDate <= route.DepartureDate) && (ArrDate == DateTime.MinValue));
+
+
+                    if (itFits)
+                    {
+                        SortedRoutes.Add(route);
+                    }
+                }
+            }
+            else if (isPointSortChB.IsChecked == true)
+            {
+                foreach (Route route in AllActiveRoutesList)
+                {
+                    itFits = ((route.ArrivalPoint == ArrPoint) && (route.DeparturePoint == DepPoint)) ||
+                        ((DepPoint == "") && (ArrPoint == route.ArrivalPoint)) || 
+                        ((ArrPoint == "") && (DepPoint == route.DeparturePoint));
+                    if (itFits)
+                    {
+                        SortedRoutes.Add(route);
+                    }
+                }
+            }
+            else if (isDateSortChB.IsChecked == true)
+            {
+
+                foreach (Route route in AllActiveRoutesList)
+                {
+                    itFits = ((DepDate <= route.DepartureDate) && (route.ArrivalDate <= ArrDate)) ||
+                             ((DepDate == DateTime.MinValue) && (route.ArrivalDate <= ArrDate)) ||
+                             ((ArrDate == DateTime.MinValue) && (DepDate <= route.DepartureDate));
+                    
+                    if (itFits)
+                    {
+                        SortedRoutes.Add(route);
+                    }
+                }
+            }
+            else
+            {
+                ActualRoutes.ItemsSource = AllActiveRoutesList;
+                return;
+            }
+            ActualRoutes.ItemsSource = SortedRoutes;
+            
+        }
+        #endregion
+
+
+
+        //Метод для переключения видимости двух элеменов. Первый аргумент становится видимым, а второй скрывается
+        private void Swither(UIElement el1, UIElement el2)
+        {
+            el1.Visibility = Visibility.Visible;
+            el2.Visibility = Visibility.Hidden;
+        }
+        //Очистка всех текстбоксов главного окна
+        private void ClearAllTxb()
+        {
+            SortDepDateTxb.Clear();
+            SortArrDateTxb.Clear();
+            SortDepPointTxb.Clear();
+            SortArrPointTxb.Clear();
+            DepPointTxb.Clear();
+            ArrPointTxb.Clear();
+            DepDateTxb.Clear();
+            ArrDateTxb.Clear();
+            TrainsIdTxb.Clear();
+
+        }
+
+
+
+
+
+
+
         #endregion
 
         #endregion
 
-
+        
     }
 }
