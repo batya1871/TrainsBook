@@ -155,22 +155,21 @@
                     <StackPanel  Orientation="Horizontal">
                         <StackPanel Orientation="Vertical" Margin="10" >
                             <TextBlock FontSize="16" Margin="5" Text="Id поезда:"/>
-                            <TextBlock FontSize="16" Margin="5" Text="Скорость поезда (км/ч):"/>
-                            <Button  Style="{StaticResource Button_task}" Height="20"   Width="180"  Name="AddTrainBtn" Click="AddTrainBtn_click">
-                                <TextBlock Padding="35,0,0,0" Text="Добавить поезд" />
-                            </Button>
-                            <Button  Style="{StaticResource Button_task}" Height="20"   Width="180"  Name="backToTableBtn" Click="backToTableBtn_Click" >
-                                <TextBlock  Padding="30,0,0,0" Text="Обратно к таблице" />
-                            </Button>
+                            
 
                         </StackPanel>
                         <StackPanel Orientation="Vertical" Margin="-20,10,0,0">
-                            <TextBox  Margin="0,10,0,0" PreviewTextInput="Train_PreviewTextInput" x:Name="NewTrainIdTxb" MaxWidth="130" MinWidth="100" />
-                            <TextBox   Margin="0,11,0,0" PreviewTextInput="Train_PreviewTextInput" x:Name="NewTrainSpeedTxb" MaxWidth="130" MinWidth="100"  />
-                            <TextBlock x:Name="NewTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="8" Text="Введены не все данные!"/>
+                            <TextBox  Margin="10,10,0,0" PreviewTextInput="Train_PreviewTextInput" x:Name="NewTrainIdTxb" MaxWidth="130" MinWidth="100" />
                         </StackPanel>
                     </StackPanel>
-                    <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="TrainNotificationTb"  Margin ="5,5,0,0" Text="Поезд добавлен в систему!"/>
+                    <Button  HorizontalAlignment="Left" Margin="10,-10,0,5" Style="{StaticResource Button_task}" Height="20"   Width="180"  Name="AddTrainBtn" Click="AddTrainBtn_click">
+                        <TextBlock Padding="35,0,0,0" Text="Добавить поезд" />
+                    </Button>
+                    <Button HorizontalAlignment="Left" Margin="10,0,0,0" Style="{StaticResource Button_task}" Height="20"   Width="180"  Name="backToTableBtn" Click="backToTableBtn_Click" >
+                        <TextBlock  Padding="30,0,0,0" Text="Обратно к таблице" />
+                    </Button>
+                    <TextBlock  FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="TrainNotificationTb"  Margin ="5,5,0,0" Text="Поезд добавлен в систему!"/>
+                    <TextBlock x:Name="NewTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="8,-15,0,0" Text="Введите id!"/>
                 </StackPanel>
                 <StackPanel Orientation="Vertical" Visibility="Hidden" x:Name="DelTrainPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
                     <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите id удаляемого поезда:"/>
@@ -187,21 +186,46 @@
                     <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="DelTrainNotificationTb"  Margin ="5,5,0,0" Text="Поезд удален из системы!"/>
                     <TextBlock x:Name="DelTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="5,-20,0,0" Text="Введите id!"/>
                 </StackPanel>
-                <StackPanel Orientation="Vertical" Visibility="Hidden" x:Name="writeOffTrainPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
-                    <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите id списываемого поезда:"/>
-                    <StackPanel  Orientation="Horizontal">
-                        <TextBlock FontSize="16" Margin="10" Text="Id поезда:"/>
-                        <TextBox  Margin="0,10,0,10" PreviewTextInput="Train_PreviewTextInput" x:Name="WOTrainIdTxb" MaxWidth="130" MinWidth="100" />
+                <StackPanel Orientation="Horizontal" Visibility="Hidden" x:Name="writeOffTrainPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <StackPanel Orientation="Vertical">
+                        <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите id списываемого поезда:"/>
+                        <StackPanel  Orientation="Horizontal">
+                            <TextBlock FontSize="16" Margin="10" Text="Id поезда:"/>
+                            <TextBox  Margin="0,10,0,10" PreviewTextInput="Train_PreviewTextInputDesc" x:Name="WOTrainIdTxb" MaxWidth="130" MinWidth="100" TextChanged="Train_TextChanged" />
+                        </StackPanel>
+                        <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,0,0,0"  Width="190"  Name="WOTrainBtn" Click="WOTrainBtn_click">
+                            <TextBlock Padding="65,0,0,0" Text="Поиск" />
+                        </Button>
+                        <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,5,0,0" Width="190"  Name="BTBFroWOTrainBtn" Click="backToTableBtn_Click" >
+                            <TextBlock  Padding="30,0,0,0" Text="Обратно к таблице" />
+                        </Button>
+                        <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="WOTrainNotificationTb1"  Margin ="5,5,0,0" Text="Поезд списан!"/>
+                        <TextBlock x:Name="WOTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="5,-20,0,0" Text="Введите id!"/>
+                        
                     </StackPanel>
-                    <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,0,0,0"  Width="190"  Name="WOTrainBtn" Click="WOTrainBtn_click">
-                        <TextBlock Padding="35,0,0,0" Text="  Списать поезд" />
-                    </Button>
-                    <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,5,0,0" Width="190"  Name="BTBFroWOTrainBtn" Click="backToTableBtn_Click" >
-                        <TextBlock  Padding="30,0,0,0" Text="Обратно к таблице" />
-                    </Button>
-                    <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="WOTrainNotificationTb"  Margin ="5,5,0,0" Text="Поезд списан!"/>
-                    <TextBlock x:Name="WOTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="5,-20,0,0" Text="Введите id!"/>
+                    <Polyline Margin="5,0,0,0"  Stroke="Black" Points=" 0,0 0,150"></Polyline>
+                    <Polyline Margin="0,0,0,0"  Stroke="Black" Points=" 0,150 -460,150" Name="SepLine"></Polyline>
+                    <StackPanel Orientation="Vertical" Visibility="Hidden" Name="breakDownPanel" >
+                        <TextBlock  FontSize="18"  Margin ="5,5,0,0" Text="Протокол списывания:"/>
+                        <TextBlock  FontSize="18"  Margin ="5,5,0,0" Name="infoTb" Text="id - "/>
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock FontSize="14" Text="Обнаружена поломка" Margin="5,0,5,0"/>
+                            <CheckBox Style="{StaticResource CheckBox}"  Margin="0,3,5,0"  Name="isBrokenTrainChB" Click="isBrokenTrainChB_Click"  />
+                        </StackPanel>
+                        <StackPanel x:Name="breakdownDescPanel" Visibility="Hidden" Orientation="Vertical">
+                            <TextBlock FontSize="14" Text="Описание поломки:" Margin="5,10,5,0"/>
+                            <TextBox x:Name="breakDownDescTxb"  Margin="5,5,0,0" MaxHeight="100" FontSize="14" Height="100" Width="300" AcceptsReturn="True" 
+                            VerticalScrollBarVisibility="Auto"/>
+                            <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,5,0,0" Width="190"   Name="breakdownDescBtn" Click="breakdownDescBtn_Click"  >
+                                <TextBlock  Padding="50,0,0,0" Text="Внести данные" />
+                            </Button>
+                            <TextBlock x:Name="BOTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="5,0,0,0" Text="Введите описание поломки!"/>
+                            <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="WOTrainNotificationTb2"  Margin ="5,-15,0,0" Text="Поезд списан!"/>
+                        </StackPanel>
+                    </StackPanel>
+                    
                 </StackPanel>
+                
                 <StackPanel Orientation="Vertical" Visibility="Hidden" x:Name="writeOnTrainPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
                     <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите id восстанавливаемого поезда:"/>
                     <StackPanel  Orientation="Horizontal">
@@ -325,12 +349,12 @@
                         <TextBlock Padding="85,0,0,0" Text="Обратно к таблице" />
                     </Button>
                 </StackPanel>
-                <Label  Grid.Row="1" Grid.Column="1" Visibility="Visible" x:Name="ActualRouteslbl" Background="White" Grid.ColumnSpan="2">
+                <Label  Grid.Row="1" Grid.Column="1" Visibility="Hidden" x:Name="ActualRouteslbl" Background="White" Grid.ColumnSpan="2">
                     <Label.Content>
                         <TextBlock Text="Актуальные маршруты" FontSize="18" Margin="0,-9,0,0"/>
                     </Label.Content>
                  </Label>
-                <DataGrid  Visibility="Visible" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"  FontSize="16" Margin="0,20,0,0"  AutoGenerateColumns="False" x:Name="ActualRoutesTable" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False">
+                <DataGrid  Visibility="Hidden" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"  FontSize="16" Margin="0,20,0,0"  AutoGenerateColumns="False" x:Name="ActualRoutesTable" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False">
                     <DataGrid.Columns>
                         <DataGridTextColumn IsReadOnly="True"  Binding="{Binding Path = DepartureDate }" Header="Дата отправления" Width="180"/>
                         <DataGridTextColumn IsReadOnly="True"  Binding="{Binding Path = DeparturePoint }" Header="Точка отправления" Width="180"/>

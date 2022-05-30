@@ -66,7 +66,6 @@ namespace TrainBook
             {
                 AllRoutesList = fileIOService.LoadAllRoots();
                 AllTrainsList = fileIOService.LoadAllTrains();
-                if (Train.MaxSpeed == 0) Train.MaxSpeed = 70;
             }
             catch (Exception ex)
             {
@@ -345,6 +344,9 @@ namespace TrainBook
             NewRoute_Warning.Visibility = Visibility.Hidden;
             if ((DepPointTxb.Text != "") && (ArrPointTxb.Text != "") && (DepDateTxb.Text != "") && (ArrDateTxb.Text != "") && (TrainsIdTxb.Text != ""))
             {
+                bool TrainInRoute = false;
+                bool TrainBorken = false;
+                bool TrainIsReal = false;
                 bool isNotInList = true;
                 string DepPoint = DepPointTxb.Text;
                 string ArrPoint = ArrPointTxb.Text;
@@ -358,20 +360,47 @@ namespace TrainBook
                     if ((Route.ArrivalDate == ArrDate) && (Route.ArrivalPoint == ArrPoint) && (Route.DepartureDate == DepDate) && (Route.DeparturePoint == DepPoint))
                     {
                         isNotInList = false;
-                        NotificationTb.Text = "Маршрут не может быть добавлен т.к. уже находится в списке";
+                       
                         break;
                     }
                 }
+                foreach (Train train in AllTrainsList)
+                {
+                    if (train.Id == TrainId)
+                    {
+                        TrainIsReal = true;
+                        if (train.InRoute == true)
+                        {
+                            TrainInRoute = true;
+                            NotificationTb.Text = "Поезд уже находится в рейсе!";
+                        }
+                        if (train.TechnicalCondition == false)
+                        {
+                            TrainBorken = true;
+                            NotificationTb.Text = "Поезд списан с эксплуатации!";
+                        }
+                        break;
+                    }
+                }
+                
 
                 if (isNotInList)
                 {
-                    NotificationTb.Text = "Маршрут успешно добавлен!";
-                    AllRoutesList.Add(newRoute);
-                    if (newRoute.IsActiveNow == true)
+                    if (TrainIsReal)
                     {
-                        AllActiveRoutesList.Add(newRoute);
+                        if ((!TrainInRoute)&& (!TrainBorken))
+                        {
+                            NotificationTb.Text = "Маршрут успешно добавлен!";
+                            AllRoutesList.Add(newRoute);
+                            if (newRoute.IsActiveNow == true)
+                            {
+                                AllActiveRoutesList.Add(newRoute);
+                            }
+                        }
                     }
+                    else NotificationTb.Text = "Маршрут не может быть добавлен - указанный поезд отсутствует в системе";
                 }
+                else NotificationTb.Text = "Маршрут не может быть добавлен т.к. уже находится в списке";
                 NotificationTb.Visibility = Visibility.Visible;
                 ClearAllTxb();
             }
@@ -613,13 +642,12 @@ namespace TrainBook
         {
             TrainNotificationTb.Visibility = Visibility.Hidden;
             NewTrain_Warning.Visibility = Visibility.Hidden;
-            if ((NewTrainIdTxb.Text != "") && (NewTrainSpeedTxb.Text != ""))
+            if (NewTrainIdTxb.Text != "")
             {
                 bool isNotInList = true;
-                double TrainsSpeed = double.Parse(NewTrainSpeedTxb.Text);
                 int TrainId = int.Parse(NewTrainIdTxb.Text);
 
-                Train newTrain = new Train(TrainId, TrainsSpeed);
+                Train newTrain = new Train(TrainId);
                 newTrain.isInRoute(AllRoutesList);
                 foreach (Train train in AllTrainsList)
                 {
@@ -698,13 +726,56 @@ namespace TrainBook
         #endregion
 
         #region Write Off Train
+        private void Train_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            if (breakDownPanel.Visibility == Visibility.Visible)
+            {
+                breakDownPanel.Visibility = Visibility.Hidden;
+                breakdownDescPanel.Visibility = Visibility.Hidden;
+                isBrokenTrainChB.IsChecked = false;
+                breakDownDescTxb.Clear();
+            }
+        }
+        private void Train_PreviewTextInputDesc(object sender, TextCompositionEventArgs e)
+        {
+            if (breakDownPanel.Visibility == Visibility.Visible)
+            {
+                breakDownPanel.Visibility = Visibility.Hidden;
+                breakdownDescPanel.Visibility = Visibility.Hidden;
+                isBrokenTrainChB.IsChecked = false;
+                breakDownDescTxb.Clear();
+            }
+            if (!(Char.IsDigit(e.Text, 0) || (e.Text == ",")))
+            {
+                e.Handled = true;
+            }
+        }
+        private void isBrokenTrainChB_Click(object sender, RoutedEventArgs e)
+        {
+            if (isBrokenTrainChB.IsChecked == true)
+            {
+                breakdownDescPanel.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                breakDownDescTxb.Clear();
+                breakdownDescPanel.Visibility = Visibility.Hidden;
+            }
+        }
 
         private void WOTrain_Click(object sender, RoutedEventArgs e)
         {
+            WOnTrainIdTxb.Clear();
+            isBrokenTrainChB.IsChecked = false;
+            breakdownDescPanel.Visibility = Visibility.Hidden;
+            breakDownPanel.Visibility = Visibility.Hidden;
             NewStandarsTrainPanel.Visibility = Visibility.Hidden;
             writeOnTrainPanel.Visibility = Visibility.Hidden;
             writeOffTrainPanel.Visibility = Visibility.Visible;
-            WOTrainNotificationTb.Visibility = Visibility.Hidden;
+            WOTrainNotificationTb1.Visibility = Visibility.Hidden;
+            WOTrainNotificationTb2.Visibility = Visibility.Hidden;
+            BOTrain_Warning.Visibility = Visibility.Hidden;
+            WOTrain_Warning.Visibility = Visibility.Hidden;
             DelTrainPanel.Visibility = Visibility.Hidden;
             NewTrainPanel.Visibility = Visibility.Hidden;
             NewRoutPanel.Visibility = Visibility.Hidden;
@@ -713,13 +784,14 @@ namespace TrainBook
             SortRoutPanel.Visibility = Visibility.Hidden;
             DeleteRoutPanel.Visibility = Visibility.Hidden;
         }
-
         private void WOTrainBtn_click(object sender, RoutedEventArgs e)
         {
-            WOTrainNotificationTb.Visibility = Visibility.Hidden;
+            WOTrainNotificationTb1.Visibility = Visibility.Hidden;
             WOTrain_Warning.Visibility = Visibility.Hidden;
             if (WOTrainIdTxb.Text != "")
             {
+                bool alreadyWO = false;
+                bool isInRoute = false;
                 bool isFounded = false;
                 int TrainId = int.Parse(WOTrainIdTxb.Text);
                 foreach (Train WOTrain in AllTrainsList)
@@ -729,22 +801,37 @@ namespace TrainBook
                         isFounded = true;
                         if (WOTrain.InRoute)
                         {
-                            WOTrainNotificationTb.Text = "Поезд не может быть списан т.к. находится в рейсе!";
+                            isInRoute = true;
+                            WOTrainNotificationTb1.Text = "Поезд не может быть списан т.к. находится в рейсе!";
+                            WOTrainNotificationTb1.Visibility = Visibility.Visible;
+                            ClearAllTxb();
                         }
-                        else
+                        if (!WOTrain.TechnicalCondition)
                         {
-                            WOTrain.TechnicalCondition = false;
-                            WOTrainNotificationTb.Text = "Поезд списан!";
+                            alreadyWO = true;
+                            WOTrainNotificationTb1.Text = "Поезд уже списан!";
+                            WOTrainNotificationTb1.Visibility = Visibility.Visible;
                         }
                         break;
                     }
                 }
-                if (!isFounded)
+                if (isFounded)
                 {
-                    WOTrainNotificationTb.Text = "Поезд с данным id отсутствует в системе!";
+                    if ((!isInRoute)&&(!alreadyWO))
+                    {
+
+                        breakDownPanel.Visibility = Visibility.Visible;
+                        infoTb.Text = "id - " + TrainId;
+                    }
                 }
-                ClearAllTxb();
-                WOTrainNotificationTb.Visibility = Visibility.Visible;
+                else
+                {
+                    WOTrainNotificationTb1.Text = "Поезд с данным id отсутствует в системе!";
+                    WOTrainNotificationTb1.Visibility = Visibility.Visible;
+                    ClearAllTxb();
+                }
+                
+                
             }
             else
             {
@@ -752,12 +839,37 @@ namespace TrainBook
             }
 
         }
+        private void breakdownDescBtn_Click(object sender, RoutedEventArgs e)
+        {
+            WOTrainNotificationTb1.Visibility = Visibility.Hidden;
+            BOTrain_Warning.Visibility = Visibility.Hidden;
+            int TrainId = int.Parse(WOTrainIdTxb.Text);
+            if (breakDownDescTxb.Text != "")
+            {
+                string Desc = breakDownDescTxb.Text;
+                foreach (Train train in AllTrainsList)
+                {
+                    if (train.Id == TrainId)
+                    {
+                        train.TechnicalCondition = false;
+                        train.dateOfDebiting = DateTime.Now;
+                        train.breakdownDesc = Desc;
+                        WOTrainNotificationTb2.Visibility = Visibility.Visible;
+                    }
+                }
+            }
+            else
+            {
+                BOTrain_Warning.Visibility = Visibility.Visible;
+            }
+        }
         #endregion
 
         #region Write On Train
 
         private void writeOnTrain_Click(object sender, RoutedEventArgs e)
         {
+
             NewStandarsTrainPanel.Visibility = Visibility.Hidden;
             writeOnTrainPanel.Visibility = Visibility.Visible;
             writeOffTrainPanel.Visibility = Visibility.Hidden;
@@ -785,6 +897,8 @@ namespace TrainBook
                     {
                         isFounded = true;
                         WOnTrain.TechnicalCondition = true;
+                        WOnTrain.breakdownDesc = "";
+                        WOnTrain.dateOfDebiting = DateTime.MinValue;
                         WOnTrainNotificationTb.Text = "Поезд восстановлен!";
                         break;
                     }
@@ -808,6 +922,7 @@ namespace TrainBook
 
         private void NSTrain_Click(object sender, RoutedEventArgs e)
         {
+            NewTrain_Warning.Visibility = Visibility.Hidden;
             NewStandarsTrainPanel.Visibility = Visibility.Visible;
             writeOnTrainPanel.Visibility = Visibility.Hidden;
             writeOffTrainPanel.Visibility = Visibility.Hidden;
@@ -827,7 +942,6 @@ namespace TrainBook
             NSTrain_Warning.Visibility = Visibility.Hidden;
             if (NSTrainSpeedTxb.Text != "")
             {
-                Train.MaxSpeed = double.Parse(NSTrainSpeedTxb.Text);
                 ClearAllTxb();
                 NSTrainNotificationTb.Visibility = Visibility.Visible;
             }
@@ -845,7 +959,6 @@ namespace TrainBook
             WOnTrainIdTxb.Clear();
             WOTrainIdTxb.Clear();
             DelTrainIdTxb.Clear();
-            NewTrainSpeedTxb.Clear();
             NewTrainIdTxb.Clear();
             SortDepDateTxb.Clear();
             SortArrDateTxb.Clear();
@@ -878,9 +991,12 @@ namespace TrainBook
         }
 
 
-        #endregion
+
 
         #endregion
 
+        #endregion
+
+        
     }
 }

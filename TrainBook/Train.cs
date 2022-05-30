@@ -9,15 +9,13 @@ namespace TrainBook
     public class Train
     {
         public int Id { get; set; }
-        public double Speed { get; set; }
         public bool InRoute { get; set; }
         public bool TechnicalCondition { get; set; }
-        [JsonProperty]
-        public static double MaxSpeed { get; set; }
-        public Train(int id, double speed)
+        public string breakdownDesc { get; set; }
+        public DateTime dateOfDebiting { get; set; }
+        public Train(int id)
         {
             Id = id;
-            Speed = speed;
             TechnicalCondition = true;
         }
 
