@@ -15,9 +15,9 @@ namespace TrainBook
     {
         private readonly string routePath = $"{Environment.CurrentDirectory}\\Route.json";
         private readonly string trainPath = $"{Environment.CurrentDirectory}\\Train.json";
-        private BindingList<Route> AllRoutesList;
+        public BindingList<Route> AllRoutesList;
         private BindingList<Route> AllActiveRoutesList = new BindingList<Route>();
-        private BindingList<Train> AllTrainsList;
+        public BindingList<Train> AllTrainsList;
         private FileIOService fileIOService;
         static private User activeUser = new User();
         public MainWindow()
@@ -60,11 +60,13 @@ namespace TrainBook
 
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            double test = Window.HeightProperty.GetHashCode();
             fileIOService = new FileIOService(routePath, trainPath);
             try
             {
                 AllRoutesList = fileIOService.LoadAllRoots();
                 AllTrainsList = fileIOService.LoadAllTrains();
+                if (Train.MaxSpeed == 0) Train.MaxSpeed = 70;
             }
             catch (Exception ex)
             {
@@ -91,7 +93,19 @@ namespace TrainBook
                 AllRoutesList = new BindingList<Route>();
             }
 
-            ActualRoutes.ItemsSource = AllActiveRoutesList;
+            if (AllTrainsList != null)
+            {
+                foreach (Train train in AllTrainsList)
+                {
+                    train.isInRoute(AllRoutesList);
+                }
+            }
+            else
+            {
+                AllTrainsList = new BindingList<Train>();
+            }
+
+            ActualRoutesTable.ItemsSource = AllActiveRoutesList;
 
         }
         #endregion
@@ -219,6 +233,7 @@ namespace TrainBook
         }
         private void Resize_Wondow(object sender, RoutedEventArgs e)
         {
+            
             if (WindowState == WindowState.Maximized)
                 this.WindowState = WindowState.Normal;
             else
@@ -306,28 +321,31 @@ namespace TrainBook
                 e.Handled = true;
             }
         }
-        private void backToTableBtn_Click(object sender, RoutedEventArgs e)
-        {
-            ActualRoutes.Visibility = Visibility.Visible;
-            ActualRoutesLbl.Visibility = Visibility.Visible;
-            SortRoutPanel.Visibility = Visibility.Hidden;
-            NewRoutPanel.Visibility = Visibility.Hidden;
-        }
+        
 
         private void AddRoute_Click(object sender, RoutedEventArgs e)
         {
+            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            writeOnTrainPanel.Visibility = Visibility.Hidden;
+            writeOffTrainPanel.Visibility = Visibility.Hidden;
+            DelTrainPanel.Visibility = Visibility.Hidden;
+            NewTrainPanel.Visibility = Visibility.Hidden;
             NewRoute_Warning.Visibility = Visibility.Hidden;
             NewRoutPanel.Visibility = Visibility.Visible;
-            ActualRoutesLbl.Visibility = Visibility.Hidden;
-            ActualRoutes.Visibility = Visibility.Hidden;
+            ActualRouteslbl.Visibility = Visibility.Hidden;
+            ActualRoutesTable.Visibility = Visibility.Hidden;
             SortRoutPanel.Visibility = Visibility.Hidden;
+            DeleteRoutPanel.Visibility = Visibility.Hidden;
+            NotificationTb.Visibility = Visibility.Hidden;
         }
         //Добавление нового маршрута при нажатии на кнопку
         private void AddRouteBtn_click(object sender, RoutedEventArgs e)
         {
+            NotificationTb.Visibility = Visibility.Hidden;
             NewRoute_Warning.Visibility = Visibility.Hidden;
             if ((DepPointTxb.Text != "") && (ArrPointTxb.Text != "") && (DepDateTxb.Text != "") && (ArrDateTxb.Text != "") && (TrainsIdTxb.Text != ""))
             {
+                bool isNotInList = true;
                 string DepPoint = DepPointTxb.Text;
                 string ArrPoint = ArrPointTxb.Text;
                 DateTime DepDate = StringToDate(DepDateTxb.Text);
@@ -335,21 +353,33 @@ namespace TrainBook
                 int TrainId = int.Parse(TrainsIdTxb.Text);
 
                 Route newRoute = new Route(DepPoint, ArrPoint, DepDate, ArrDate, TrainId);
+                foreach (Route Route in AllRoutesList)
+                {
+                    if ((Route.ArrivalDate == ArrDate) && (Route.ArrivalPoint == ArrPoint) && (Route.DepartureDate == DepDate) && (Route.DeparturePoint == DepPoint))
+                    {
+                        isNotInList = false;
+                        NotificationTb.Text = "Маршрут не может быть добавлен т.к. уже находится в списке";
+                        break;
+                    }
+                }
 
-                if (!AllRoutesList.Contains(newRoute))
+                if (isNotInList)
                 {
+                    NotificationTb.Text = "Маршрут успешно добавлен!";
                     AllRoutesList.Add(newRoute);
+                    if (newRoute.IsActiveNow == true)
+                    {
+                        AllActiveRoutesList.Add(newRoute);
+                    }
                 }
-                if ((newRoute.IsActiveNow == true) && (!AllActiveRoutesList.Contains(newRoute)))
-                {
-                    AllActiveRoutesList.Add(newRoute);
-                }
+                NotificationTb.Visibility = Visibility.Visible;
                 ClearAllTxb();
             }
             else
             {
                 NewRoute_Warning.Visibility = Visibility.Visible;
             }
+
 
         }
         #endregion
@@ -359,11 +389,16 @@ namespace TrainBook
         
         private void Sort_actual_routes_Click(object sender, RoutedEventArgs e)
         {
-            NewRoute_Warning.Visibility = Visibility.Hidden;
+            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            writeOnTrainPanel.Visibility = Visibility.Hidden;
+            writeOffTrainPanel.Visibility = Visibility.Hidden;
+            DelTrainPanel.Visibility = Visibility.Hidden;
             NewRoutPanel.Visibility = Visibility.Hidden;
-            ActualRoutesLbl.Visibility = Visibility.Hidden;
-            ActualRoutes.Visibility = Visibility.Hidden;
+            NewTrainPanel.Visibility = Visibility.Hidden;
+            ActualRouteslbl.Visibility = Visibility.Hidden;
+            ActualRoutesTable.Visibility = Visibility.Hidden;
             SortRoutPanel.Visibility = Visibility.Visible;
+            DeleteRoutPanel.Visibility = Visibility.Hidden;
         }
 
         private void isPointSortChB_Click(object sender, RoutedEventArgs e)
@@ -486,25 +521,332 @@ namespace TrainBook
             }
             else
             {
-                ActualRoutes.ItemsSource = AllActiveRoutesList;
+                ActualRoutesTable.ItemsSource = AllActiveRoutesList;
                 return;
             }
-            ActualRoutes.ItemsSource = SortedRoutes;
+            ActualRoutesTable.ItemsSource = SortedRoutes;
             
         }
         #endregion
 
-
-
-        //Метод для переключения видимости двух элеменов. Первый аргумент становится видимым, а второй скрывается
-        private void Swither(UIElement el1, UIElement el2)
+        #region Delete Route
+        private void DeleteRoute_Click(object sender, RoutedEventArgs e)
         {
-            el1.Visibility = Visibility.Visible;
-            el2.Visibility = Visibility.Hidden;
+            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            writeOnTrainPanel.Visibility = Visibility.Hidden;
+            writeOffTrainPanel.Visibility = Visibility.Hidden;
+            DelTrainPanel.Visibility = Visibility.Hidden;
+            NewTrainPanel.Visibility = Visibility.Hidden;
+            NewRoutPanel.Visibility = Visibility.Hidden;
+            ActualRouteslbl.Visibility = Visibility.Hidden;
+            ActualRoutesTable.Visibility = Visibility.Hidden;
+            SortRoutPanel.Visibility = Visibility.Hidden;
+            DeleteRoutPanel.Visibility = Visibility.Visible;
+            DelNotification.Visibility = Visibility.Hidden;
+
         }
+        
+        private void DeleteRouteBtn_click(object sender, RoutedEventArgs e)
+        {
+            DelNotification.Visibility = Visibility.Hidden;
+            DelRoute_Warning.Visibility = Visibility.Hidden;
+            if ((DelDepPointTxb.Text != "") && (DelArrPointTxb.Text != "") && (DelDepDateTxb.Text != "") && (DelArrDateTxb.Text != "") && (DelTrainsIdTxb.Text != ""))
+            {
+                bool isFounded = false;
+                string DepPoint = DelDepPointTxb.Text;
+                string ArrPoint = DelArrPointTxb.Text;
+                DateTime DepDate = StringToDate(DelDepDateTxb.Text);
+                DateTime ArrDate = StringToDate(DelArrDateTxb.Text);
+                int TrainId = int.Parse(DelTrainsIdTxb.Text);
+
+
+                foreach (Route DelRoute in AllRoutesList)
+                {
+                    if ((DelRoute.ArrivalDate == ArrDate) && (DelRoute.ArrivalPoint == ArrPoint) && (DelRoute.DepartureDate == DepDate) && (DelRoute.DeparturePoint == DepPoint))
+                    {
+                        isFounded = true;
+                        AllRoutesList.Remove(DelRoute);
+                        DelNotification.Text = "Маршрут успешно удален!";
+                        if ((DelRoute.IsActiveNow == true))
+                        {
+                            AllActiveRoutesList.Remove(DelRoute);
+                        }
+                        break;
+                    }
+                }
+                if (!isFounded) DelNotification.Text = "Маршрут отсутствует в системе!";
+                
+                ClearAllTxb();
+            }
+            else
+            {
+                DelRoute_Warning.Visibility = Visibility.Visible;
+            }
+            DelNotification.Visibility = Visibility.Visible;
+        }
+        #endregion
+
+        #region Add Train
+        private void AddTrain_Click(object sender, RoutedEventArgs e)
+        {
+            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            writeOnTrainPanel.Visibility = Visibility.Hidden;
+            writeOffTrainPanel.Visibility = Visibility.Hidden;
+            DelTrainPanel.Visibility = Visibility.Hidden;
+            NewTrainPanel.Visibility = Visibility.Visible;
+            NewRoutPanel.Visibility = Visibility.Hidden;
+            ActualRouteslbl.Visibility = Visibility.Hidden;
+            ActualRoutesTable.Visibility = Visibility.Hidden;
+            SortRoutPanel.Visibility = Visibility.Hidden;
+            DeleteRoutPanel.Visibility = Visibility.Hidden;
+            TrainNotificationTb.Visibility = Visibility.Hidden;
+        }
+
+        private void Train_PreviewTextInput(object sender, TextCompositionEventArgs e)
+        {
+            if (!(Char.IsDigit(e.Text, 0) || (e.Text == ",")))
+            {
+                e.Handled = true;
+            }
+        }
+        private void AddTrainBtn_click(object sender, RoutedEventArgs e)
+        {
+            TrainNotificationTb.Visibility = Visibility.Hidden;
+            NewTrain_Warning.Visibility = Visibility.Hidden;
+            if ((NewTrainIdTxb.Text != "") && (NewTrainSpeedTxb.Text != ""))
+            {
+                bool isNotInList = true;
+                double TrainsSpeed = double.Parse(NewTrainSpeedTxb.Text);
+                int TrainId = int.Parse(NewTrainIdTxb.Text);
+
+                Train newTrain = new Train(TrainId, TrainsSpeed);
+                newTrain.isInRoute(AllRoutesList);
+                foreach (Train train in AllTrainsList)
+                {
+                    if (train.Id == TrainId)
+                    {
+                        isNotInList = false;
+                        TrainNotificationTb.Text = "Поезд с данным id уже находится в списке";
+                        break;
+                    }
+                }
+
+                if (isNotInList)
+                {
+                    TrainNotificationTb.Text = "Поезд успешно добавлен в список!";
+                    AllTrainsList.Add(newTrain);
+                }
+                TrainNotificationTb.Visibility = Visibility.Visible;
+                ClearAllTxb();
+            }
+            else
+            {
+                NewTrain_Warning.Visibility = Visibility.Visible;
+            }
+
+        }
+        #endregion
+
+        #region Delete Train
+
+        private void DeleteTrain_Click(object sender, RoutedEventArgs e)
+        {
+            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            writeOnTrainPanel.Visibility = Visibility.Hidden;
+            writeOffTrainPanel.Visibility = Visibility.Hidden;
+            DelTrainNotificationTb.Visibility = Visibility.Hidden;
+            DelTrainPanel.Visibility = Visibility.Visible;
+            NewTrainPanel.Visibility = Visibility.Hidden;
+            NewRoutPanel.Visibility = Visibility.Hidden;
+            ActualRouteslbl.Visibility = Visibility.Hidden;
+            ActualRoutesTable.Visibility = Visibility.Hidden;
+            SortRoutPanel.Visibility = Visibility.Hidden;
+            DeleteRoutPanel.Visibility = Visibility.Hidden;
+        }
+
+        private void DelTrainBtn_click(object sender, RoutedEventArgs e)
+        {
+            DelTrainNotificationTb.Visibility = Visibility.Hidden;
+            DelTrain_Warning.Visibility = Visibility.Hidden;
+            if (DelTrainIdTxb.Text != "")
+            {
+                bool isFounded = false;
+                int TrainId = int.Parse(DelTrainIdTxb.Text);
+                foreach (Train DelTrain in AllTrainsList)
+                {
+                    if ((DelTrain.Id == TrainId))
+                    {
+                        isFounded = true;
+                        AllTrainsList.Remove(DelTrain);
+                        DelNotification.Text = "Поезд успешно удален!";
+                        break;
+                    }
+                }
+                if (!isFounded)
+                {
+                    DelTrainNotificationTb.Text = "Поезд с данным id отсутствует в системе!";
+                }
+                ClearAllTxb();
+                DelTrainNotificationTb.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                DelTrain_Warning.Visibility = Visibility.Visible;
+            }
+            
+        }
+        #endregion
+
+        #region Write Off Train
+
+        private void WOTrain_Click(object sender, RoutedEventArgs e)
+        {
+            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            writeOnTrainPanel.Visibility = Visibility.Hidden;
+            writeOffTrainPanel.Visibility = Visibility.Visible;
+            WOTrainNotificationTb.Visibility = Visibility.Hidden;
+            DelTrainPanel.Visibility = Visibility.Hidden;
+            NewTrainPanel.Visibility = Visibility.Hidden;
+            NewRoutPanel.Visibility = Visibility.Hidden;
+            ActualRouteslbl.Visibility = Visibility.Hidden;
+            ActualRoutesTable.Visibility = Visibility.Hidden;
+            SortRoutPanel.Visibility = Visibility.Hidden;
+            DeleteRoutPanel.Visibility = Visibility.Hidden;
+        }
+
+        private void WOTrainBtn_click(object sender, RoutedEventArgs e)
+        {
+            WOTrainNotificationTb.Visibility = Visibility.Hidden;
+            WOTrain_Warning.Visibility = Visibility.Hidden;
+            if (WOTrainIdTxb.Text != "")
+            {
+                bool isFounded = false;
+                int TrainId = int.Parse(WOTrainIdTxb.Text);
+                foreach (Train WOTrain in AllTrainsList)
+                {
+                    if ((WOTrain.Id == TrainId))
+                    {
+                        isFounded = true;
+                        if (WOTrain.InRoute)
+                        {
+                            WOTrainNotificationTb.Text = "Поезд не может быть списан т.к. находится в рейсе!";
+                        }
+                        else
+                        {
+                            WOTrain.TechnicalCondition = false;
+                            WOTrainNotificationTb.Text = "Поезд списан!";
+                        }
+                        break;
+                    }
+                }
+                if (!isFounded)
+                {
+                    WOTrainNotificationTb.Text = "Поезд с данным id отсутствует в системе!";
+                }
+                ClearAllTxb();
+                WOTrainNotificationTb.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                WOTrain_Warning.Visibility = Visibility.Visible;
+            }
+
+        }
+        #endregion
+
+        #region Write On Train
+
+        private void writeOnTrain_Click(object sender, RoutedEventArgs e)
+        {
+            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            writeOnTrainPanel.Visibility = Visibility.Visible;
+            writeOffTrainPanel.Visibility = Visibility.Hidden;
+            WOnTrainNotificationTb.Visibility = Visibility.Hidden;
+            DelTrainPanel.Visibility = Visibility.Hidden;
+            NewTrainPanel.Visibility = Visibility.Hidden;
+            NewRoutPanel.Visibility = Visibility.Hidden;
+            ActualRouteslbl.Visibility = Visibility.Hidden;
+            ActualRoutesTable.Visibility = Visibility.Hidden;
+            SortRoutPanel.Visibility = Visibility.Hidden;
+            DeleteRoutPanel.Visibility = Visibility.Hidden;
+        }
+
+        private void WOnTrainBtn_click(object sender, RoutedEventArgs e)
+        {
+            WOnTrainNotificationTb.Visibility = Visibility.Hidden;
+            WOnTrain_Warning.Visibility = Visibility.Hidden;
+            if (WOnTrainIdTxb.Text != "")
+            {
+                bool isFounded = false;
+                int TrainId = int.Parse(WOnTrainIdTxb.Text);
+                foreach (Train WOnTrain in AllTrainsList)
+                {
+                    if ((WOnTrain.Id == TrainId))
+                    {
+                        isFounded = true;
+                        WOnTrain.TechnicalCondition = true;
+                        WOnTrainNotificationTb.Text = "Поезд восстановлен!";
+                        break;
+                    }
+                }
+                if (!isFounded)
+                {
+                    WOnTrainNotificationTb.Text = "Поезд с данным id отсутствует в системе!";
+                }
+                ClearAllTxb();
+                WOnTrainNotificationTb.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                WOnTrain_Warning.Visibility = Visibility.Visible;
+            }
+
+        }
+        #endregion
+
+        #region New standarts for trains
+
+        private void NSTrain_Click(object sender, RoutedEventArgs e)
+        {
+            NewStandarsTrainPanel.Visibility = Visibility.Visible;
+            writeOnTrainPanel.Visibility = Visibility.Hidden;
+            writeOffTrainPanel.Visibility = Visibility.Hidden;
+            NSTrainNotificationTb.Visibility = Visibility.Hidden;
+            DelTrainPanel.Visibility = Visibility.Hidden;
+            NewTrainPanel.Visibility = Visibility.Hidden;
+            NewRoutPanel.Visibility = Visibility.Hidden;
+            ActualRouteslbl.Visibility = Visibility.Hidden;
+            ActualRoutesTable.Visibility = Visibility.Hidden;
+            SortRoutPanel.Visibility = Visibility.Hidden;
+            DeleteRoutPanel.Visibility = Visibility.Hidden;
+        }
+
+        private void NSTrainBtn_click(object sender, RoutedEventArgs e)
+        {
+            NSTrainNotificationTb.Visibility = Visibility.Hidden;
+            NSTrain_Warning.Visibility = Visibility.Hidden;
+            if (NSTrainSpeedTxb.Text != "")
+            {
+                Train.MaxSpeed = double.Parse(NSTrainSpeedTxb.Text);
+                ClearAllTxb();
+                NSTrainNotificationTb.Visibility = Visibility.Visible;
+            }
+            else
+            {
+                NSTrain_Warning.Visibility = Visibility.Visible;
+            }
+
+        }
+        #endregion
+
         //Очистка всех текстбоксов главного окна
         private void ClearAllTxb()
         {
+            WOnTrainIdTxb.Clear();
+            WOTrainIdTxb.Clear();
+            DelTrainIdTxb.Clear();
+            NewTrainSpeedTxb.Clear();
+            NewTrainIdTxb.Clear();
             SortDepDateTxb.Clear();
             SortArrDateTxb.Clear();
             SortDepPointTxb.Clear();
@@ -514,19 +856,31 @@ namespace TrainBook
             DepDateTxb.Clear();
             ArrDateTxb.Clear();
             TrainsIdTxb.Clear();
+            DelDepPointTxb.Clear();
+            DelArrPointTxb.Clear();
+            DelDepDateTxb.Clear();
+            DelArrDateTxb.Clear();
+            DelTrainsIdTxb.Clear();
 
+        }
+        private void backToTableBtn_Click(object sender, RoutedEventArgs e)
+        {
+            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            writeOnTrainPanel.Visibility = Visibility.Hidden;
+            writeOffTrainPanel.Visibility = Visibility.Hidden;
+            DelTrainPanel.Visibility = Visibility.Hidden;
+            NewTrainPanel.Visibility = Visibility.Hidden;
+            ActualRouteslbl.Visibility = Visibility.Visible;
+            ActualRoutesTable.Visibility = Visibility.Visible;
+            SortRoutPanel.Visibility = Visibility.Hidden;
+            NewRoutPanel.Visibility = Visibility.Hidden;
+            DeleteRoutPanel.Visibility = Visibility.Hidden;
         }
 
 
-
-
-
-
-
         #endregion
 
         #endregion
 
-        
     }
 }

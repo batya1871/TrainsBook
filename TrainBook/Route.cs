@@ -4,7 +4,7 @@ using System.Text;
 
 namespace TrainBook
 {
-    class Route
+    public class Route
     {
         public string DeparturePoint { get; set; }
         public string ArrivalPoint { get; set; }

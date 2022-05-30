@@ -150,31 +150,145 @@
 
 
                 </DockPanel>
-                <StackPanel Visibility="Hidden" x:Name="NewRoutPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" Orientation="Horizontal">
-                    <StackPanel Orientation="Vertical" Margin="10" >
-                        <TextBlock FontSize="16" Margin="5" Text="Точка отправления:"/>
-                        <TextBlock FontSize="16" Margin="5" Text="Точка прибытия:"/>
-                        <TextBlock FontSize="16" Margin="5" Text="Дата отправления:"/>
-                        <TextBlock FontSize="16" Margin="5" Text="Дата прибытия:"/>
-                        <TextBlock FontSize="16" Margin="5" Text="Id поезда:"/>
-                        <Button  Style="{StaticResource Button_task}" Height="20"   Width="140"  Name="AddRouteBtn" Click="AddRouteBtn_click">
-                            <TextBlock Text="  Добавить маршрут" />
-                        </Button>
-                        <Button  Style="{StaticResource Button_task}" Height="20"   Width="140"  Name="backToTableBtn" Click="backToTableBtn_Click" >
-                            <TextBlock Text="  Обратно к таблице" />
-                        </Button>
-                        
-                    </StackPanel>
-                    <StackPanel Orientation="Vertical" Margin="0,10,0,0">
-                        <TextBox Margin="0,8,0,0" x:Name="DepPointTxb" MaxWidth="130"/>
-                        <TextBox  Margin="0,11,0,0" x:Name="ArrPointTxb" MaxWidth="130"/>
-                        <TextBox  Margin="0,16,0,0" PreviewTextInput="DataPick_PreviewTextInput" x:Name="DepDateTxb" MaxWidth="130" MinWidth="100" />
-                        <TextBox   Margin="0,11,0,0" PreviewTextInput="DataPick_PreviewTextInput" x:Name="ArrDateTxb" MaxWidth="130" MinWidth="100"  />
-                        <TextBox  Margin="0,13,0,0" x:Name="TrainsIdTxb" MaxWidth="130" />
-                        <TextBlock x:Name="NewRoute_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="8" Text="Введены не все данные!"/>
-                    </StackPanel>
-                </StackPanel>
+                <StackPanel Orientation="Vertical" Visibility="Hidden" x:Name="NewTrainPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите информацию об добавляемом поезде:"/>
+                    <StackPanel  Orientation="Horizontal">
+                        <StackPanel Orientation="Vertical" Margin="10" >
+                            <TextBlock FontSize="16" Margin="5" Text="Id поезда:"/>
+                            <TextBlock FontSize="16" Margin="5" Text="Скорость поезда (км/ч):"/>
+                            <Button  Style="{StaticResource Button_task}" Height="20"   Width="180"  Name="AddTrainBtn" Click="AddTrainBtn_click">
+                                <TextBlock Padding="35,0,0,0" Text="Добавить поезд" />
+                            </Button>
+                            <Button  Style="{StaticResource Button_task}" Height="20"   Width="180"  Name="backToTableBtn" Click="backToTableBtn_Click" >
+                                <TextBlock  Padding="30,0,0,0" Text="Обратно к таблице" />
+                            </Button>
 
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical" Margin="-20,10,0,0">
+                            <TextBox  Margin="0,10,0,0" PreviewTextInput="Train_PreviewTextInput" x:Name="NewTrainIdTxb" MaxWidth="130" MinWidth="100" />
+                            <TextBox   Margin="0,11,0,0" PreviewTextInput="Train_PreviewTextInput" x:Name="NewTrainSpeedTxb" MaxWidth="130" MinWidth="100"  />
+                            <TextBlock x:Name="NewTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="8" Text="Введены не все данные!"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="TrainNotificationTb"  Margin ="5,5,0,0" Text="Поезд добавлен в систему!"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Visibility="Hidden" x:Name="DelTrainPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите id удаляемого поезда:"/>
+                    <StackPanel  Orientation="Horizontal">
+                        <TextBlock FontSize="16" Margin="10" Text="Id поезда:"/>
+                        <TextBox  Margin="0,10,0,10" PreviewTextInput="Train_PreviewTextInput" x:Name="DelTrainIdTxb" MaxWidth="130" MinWidth="100" />
+                     </StackPanel>
+                    <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,0,0,0"  Width="190"  Name="DelTrainBtn" Click="DelTrainBtn_click">
+                        <TextBlock Padding="35,0,0,0" Text="  Удалить поезд" />
+                    </Button>
+                    <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,5,0,0" Width="190"  Name="BTBFroDelTrainBtn" Click="backToTableBtn_Click" >
+                        <TextBlock  Padding="30,0,0,0" Text="Обратно к таблице" />
+                    </Button>
+                    <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="DelTrainNotificationTb"  Margin ="5,5,0,0" Text="Поезд удален из системы!"/>
+                    <TextBlock x:Name="DelTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="5,-20,0,0" Text="Введите id!"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Visibility="Hidden" x:Name="writeOffTrainPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите id списываемого поезда:"/>
+                    <StackPanel  Orientation="Horizontal">
+                        <TextBlock FontSize="16" Margin="10" Text="Id поезда:"/>
+                        <TextBox  Margin="0,10,0,10" PreviewTextInput="Train_PreviewTextInput" x:Name="WOTrainIdTxb" MaxWidth="130" MinWidth="100" />
+                    </StackPanel>
+                    <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,0,0,0"  Width="190"  Name="WOTrainBtn" Click="WOTrainBtn_click">
+                        <TextBlock Padding="35,0,0,0" Text="  Списать поезд" />
+                    </Button>
+                    <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,5,0,0" Width="190"  Name="BTBFroWOTrainBtn" Click="backToTableBtn_Click" >
+                        <TextBlock  Padding="30,0,0,0" Text="Обратно к таблице" />
+                    </Button>
+                    <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="WOTrainNotificationTb"  Margin ="5,5,0,0" Text="Поезд списан!"/>
+                    <TextBlock x:Name="WOTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="5,-20,0,0" Text="Введите id!"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Visibility="Hidden" x:Name="writeOnTrainPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите id восстанавливаемого поезда:"/>
+                    <StackPanel  Orientation="Horizontal">
+                        <TextBlock FontSize="16" Margin="10" Text="Id поезда:"/>
+                        <TextBox  Margin="0,10,0,10" PreviewTextInput="Train_PreviewTextInput" x:Name="WOnTrainIdTxb" MaxWidth="130" MinWidth="100" />
+                    </StackPanel>
+                    <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,0,0,0"  Width="190"  Name="WOnTrainBtn" Click="WOnTrainBtn_click">
+                        <TextBlock Padding="28,0,0,0" Text="Восстановить поезд" />
+                    </Button>
+                    <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,5,0,0" Width="190"  Name="BTBFroWOnTrainBtn" Click="backToTableBtn_Click" >
+                        <TextBlock  Padding="30,0,0,0" Text="Обратно к таблице" />
+                    </Button>
+                    <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="WOnTrainNotificationTb"  Margin ="5,5,0,0" Text="Поезд восстановлен!"/>
+                    <TextBlock x:Name="WOnTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="5,-20,0,0" Text="Введите id!"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Visibility="Visible" x:Name="NewStandarsTrainPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите новый стандарт скорости:"/>
+                    <StackPanel  Orientation="Horizontal">
+                        <TextBlock FontSize="16" Margin="10" Text="Допустимая скорость:"/>
+                        <TextBox  Margin="0,10,0,10" PreviewTextInput="Train_PreviewTextInput" x:Name="NSTrainSpeedTxb" MaxWidth="130" MinWidth="100" />
+                    </StackPanel>
+                    <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,0,0,0"  Width="190"  Name="NSTrainBtn" Click="NSTrainBtn_click">
+                        <TextBlock Padding="35,0,0,0" Text="Ввести стандарты" />
+                    </Button>
+                    <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,5,0,0" Width="190"  Name="BTBFromNSTrainBtn" Click="backToTableBtn_Click" >
+                        <TextBlock  Padding="30,0,0,0" Text="Обратно к таблице" />
+                    </Button>
+                    <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="NSTrainNotificationTb"  Margin ="5,5,0,0" Text="Стандарты введены!"/>
+                    <TextBlock x:Name="NSTrain_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="5,-20,0,0" Text="Введите скорость!"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Visibility="Hidden" x:Name="NewRoutPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2">
+                    <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите информацию об добавляемом маршруте:"/>
+                    <StackPanel  Orientation="Horizontal">
+                        <StackPanel Orientation="Vertical" Margin="10" >
+                            <TextBlock FontSize="16" Margin="5" Text="Точка отправления:"/>
+                            <TextBlock FontSize="16" Margin="5" Text="Точка прибытия:"/>
+                            <TextBlock FontSize="16" Margin="5" Text="Дата отправления:"/>
+                            <TextBlock FontSize="16" Margin="5" Text="Дата прибытия:"/>
+                            <TextBlock FontSize="16" Margin="5" Text="Id поезда:"/>
+                            <Button  Style="{StaticResource Button_task}" Height="20"   Width="140"  Name="AddRouteBtn" Click="AddRouteBtn_click">
+                                <TextBlock Text="  Добавить маршрут" />
+                            </Button>
+                            <Button  Style="{StaticResource Button_task}" Height="20"   Width="140"  Name="BTTFromNewTrainBtn" Click="backToTableBtn_Click" >
+                                <TextBlock Text="  Обратно к таблице" />
+                            </Button>
+
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical" Margin="0,10,0,0">
+                            <TextBox Margin="0,8,0,0" x:Name="DepPointTxb" MaxWidth="130"/>
+                            <TextBox  Margin="0,11,0,0" x:Name="ArrPointTxb" MaxWidth="130"/>
+                            <TextBox  Margin="0,16,0,0" PreviewTextInput="DataPick_PreviewTextInput" x:Name="DepDateTxb" MaxWidth="130" MinWidth="100" />
+                            <TextBox   Margin="0,11,0,0" PreviewTextInput="DataPick_PreviewTextInput" x:Name="ArrDateTxb" MaxWidth="130" MinWidth="100"  />
+                            <TextBox  Margin="0,13,0,0" x:Name="TrainsIdTxb" MaxWidth="130" />
+                            <TextBlock x:Name="NewRoute_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="8" Text="Введены не все данные!"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock FontSize="16" FontWeight="Bold" Visibility="Hidden" x:Name="NotificationTb"  Margin ="5,5,0,0" Text="Маршрут успешно добавлен!"/>
+                </StackPanel>
+                <StackPanel Orientation="Vertical" Visibility="Hidden" x:Name="DeleteRoutPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" >
+                    <TextBlock FontSize="18"  Margin ="5,5,0,0" Text="Введите информацию об удаляемом маршруте:"/>
+                    <StackPanel Orientation="Horizontal">
+                        <StackPanel Orientation="Vertical" Margin="10" >
+                            <TextBlock FontSize="16" Margin="5" Text="Точка отправления:"/>
+                            <TextBlock FontSize="16" Margin="5" Text="Точка прибытия:"/>
+                            <TextBlock FontSize="16" Margin="5" Text="Дата отправления:"/>
+                            <TextBlock FontSize="16" Margin="5" Text="Дата прибытия:"/>
+                            <TextBlock FontSize="16" Margin="5" Text="Id поезда:"/>
+                            <Button  Style="{StaticResource Button_task}" Height="20"   Width="140"  Name="DeleteRouteBtn" Click="DeleteRouteBtn_click">
+                                <TextBlock Text="  Удалить маршрут" />
+                            </Button>
+                            <Button  Style="{StaticResource Button_task}" Height="20"   Width="140"  Name="backToTableFromDeleteRouteBtn" Click="backToTableBtn_Click" >
+                                <TextBlock Text="  Обратно к таблице" />
+                            </Button>
+
+                        </StackPanel>
+                        <StackPanel Orientation="Vertical" Margin="0,10,0,0">
+                            <TextBox Margin="0,8,0,0" x:Name="DelDepPointTxb" MaxWidth="130"/>
+                            <TextBox  Margin="0,11,0,0" x:Name="DelArrPointTxb" MaxWidth="130"/>
+                            <TextBox  Margin="0,16,0,0" PreviewTextInput="DataPick_PreviewTextInput" x:Name="DelDepDateTxb" MaxWidth="130" MinWidth="100" />
+                            <TextBox   Margin="0,11,0,0" PreviewTextInput="DataPick_PreviewTextInput" x:Name="DelArrDateTxb" MaxWidth="130" MinWidth="100"  />
+                            <TextBox  Margin="0,13,0,0" x:Name="DelTrainsIdTxb" MaxWidth="130" />
+                            <TextBlock x:Name="DelRoute_Warning" Foreground="Red" Visibility="Hidden" FontSize="13" Margin="8" Text="Введены не все данные!"/>
+                        </StackPanel>
+                    </StackPanel>
+                    <TextBlock FontSize="16" x:Name="DelNotification" Visibility="Hidden" FontWeight="Bold"  Margin ="5,5,0,0" Text="Маршрут успешно удален!"/>
+
+                </StackPanel>
                 <StackPanel  Visibility="Hidden" x:Name="SortRoutPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"  Orientation="Vertical">
                     <StackPanel Orientation="Horizontal">
                         <StackPanel Orientation="Vertical" Margin="10" >
@@ -207,17 +321,16 @@
                     <Button  Style="{StaticResource Button_task}" Height="20" Margin="10,0,0,5"   Width="300" HorizontalAlignment="Left" Name="SortRouteBtn" >
                         <TextBlock Padding="85,0,0,0" Text="Начать сортировку" />
                     </Button>
-                    <Button  Style="{StaticResource Button_task}" Height="20"  Margin="10,0,0,5"  Width="300" HorizontalAlignment="Left"  Name="backToTableFromSortBtn" Click="backToTableBtn_Click">
+                    <Button  Style="{StaticResource Button_task}" Height="20"  Margin="10,0,0,5"  Width="300" HorizontalAlignment="Left"  Name="backToTableFromSortBtn_Click" Click="backToTableBtn_Click">
                         <TextBlock Padding="85,0,0,0" Text="Обратно к таблице" />
                     </Button>
                 </StackPanel>
-               
-                <Label Grid.Row="1" Grid.Column="1" Visibility="Visible" x:Name="ActualRoutesLbl" Background="White" Grid.ColumnSpan="2">
+                <Label  Grid.Row="1" Grid.Column="1" Visibility="Visible" x:Name="ActualRouteslbl" Background="White" Grid.ColumnSpan="2">
                     <Label.Content>
                         <TextBlock Text="Актуальные маршруты" FontSize="18" Margin="0,-9,0,0"/>
                     </Label.Content>
-                </Label>
-                <DataGrid Visibility="Visible" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2" x:Name="ActualRoutes" FontSize="16" Margin="0,20,0,0" AutoGenerateColumns="False">
+                 </Label>
+                <DataGrid  Visibility="Visible" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"  FontSize="16" Margin="0,20,0,0"  AutoGenerateColumns="False" x:Name="ActualRoutesTable" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False">
                     <DataGrid.Columns>
                         <DataGridTextColumn IsReadOnly="True"  Binding="{Binding Path = DepartureDate }" Header="Дата отправления" Width="180"/>
                         <DataGridTextColumn IsReadOnly="True"  Binding="{Binding Path = DeparturePoint }" Header="Точка отправления" Width="180"/>
@@ -227,6 +340,7 @@
                     </DataGrid.Columns>
                 </DataGrid>
 
+                
                 <!--#endregion-->
 
                 <!--#region  main field-->
@@ -252,25 +366,25 @@
                         <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="Sort_actual_routes" Click="Sort_actual_routes_Click">
                             <TextBlock Text="Сортировать актуальные маршруты" Margin="1,0,0,0"/>
                         </Button>
-                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="change_standards">
+                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="change_standards" Click="NSTrain_Click">
                             <TextBlock Text="Изменить стандарты эксплуатации" Margin="5,0,0,0"/>
                         </Button>
-                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="writeOffTrain">
+                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="writeOffTrain" Click="WOTrain_Click">
                             <TextBlock Text="Списать с эксплуатации поезд" Margin="15,0,0,0"/>
                         </Button>
-                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="writeOnTrain">
+                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="writeOnTrain" Click="writeOnTrain_Click">
                             <TextBlock Text="Восстановить эксплуатацию поезда" Margin="1,0,0,0"/>
                         </Button>
-                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="AddTrain">
+                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="AddTrain" Click="AddTrain_Click">
                             <TextBlock Text="Добавить поезд в систему" Margin="25,0,0,0"/>
                         </Button>
-                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="DeleteTrain">
+                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="DeleteTrain" Click="DeleteTrain_Click">
                             <TextBlock Text="Удалить поезд из системы" Margin="26,0,0,0"/>
                         </Button>
                         <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="AddRoute" Click="AddRoute_Click">
                             <TextBlock Text="Добавить маршрут" Margin="51,0,0,0"/>
                         </Button>
-                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="DeleteRoute">
+                        <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="DeleteRoute" Click="DeleteRoute_Click">
                             <TextBlock Text="Удалить маршрут" Margin="55,0,0,0"/>
                         </Button>
 
