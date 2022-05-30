@@ -6,6 +6,8 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
+using System.Windows.Shapes;
+
 namespace TrainBook
 {
     /// <summary>
@@ -20,6 +22,8 @@ namespace TrainBook
         public BindingList<Train> AllTrainsList;
         private FileIOService fileIOService;
         static private User activeUser = new User();
+        static int iter = 0;
+        static bool isChecking = false;
         public MainWindow()
         {
             InitializeComponent();
@@ -96,7 +100,8 @@ namespace TrainBook
             {
                 foreach (Train train in AllTrainsList)
                 {
-                    train.isInRoute(AllRoutesList);
+                    train.isInRoute(AllActiveRoutesList);
+                    train.DetermineState();
                 }
             }
             else
@@ -324,7 +329,10 @@ namespace TrainBook
 
         private void AddRoute_Click(object sender, RoutedEventArgs e)
         {
-            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            isChecking = false;
+            iter = 0;
+            breakDownPanel.Visibility = Visibility.Hidden;
+            checkingTheEquipment.Visibility = Visibility.Hidden;
             writeOnTrainPanel.Visibility = Visibility.Hidden;
             writeOffTrainPanel.Visibility = Visibility.Hidden;
             DelTrainPanel.Visibility = Visibility.Hidden;
@@ -418,7 +426,10 @@ namespace TrainBook
         
         private void Sort_actual_routes_Click(object sender, RoutedEventArgs e)
         {
-            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            isChecking = false;
+            iter = 0;
+            breakDownPanel.Visibility = Visibility.Hidden;
+            checkingTheEquipment.Visibility = Visibility.Hidden;
             writeOnTrainPanel.Visibility = Visibility.Hidden;
             writeOffTrainPanel.Visibility = Visibility.Hidden;
             DelTrainPanel.Visibility = Visibility.Hidden;
@@ -561,7 +572,10 @@ namespace TrainBook
         #region Delete Route
         private void DeleteRoute_Click(object sender, RoutedEventArgs e)
         {
-            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            isChecking = false;
+            iter = 0;
+            breakDownPanel.Visibility = Visibility.Hidden;
+            checkingTheEquipment.Visibility = Visibility.Hidden;
             writeOnTrainPanel.Visibility = Visibility.Hidden;
             writeOffTrainPanel.Visibility = Visibility.Hidden;
             DelTrainPanel.Visibility = Visibility.Hidden;
@@ -618,7 +632,10 @@ namespace TrainBook
         #region Add Train
         private void AddTrain_Click(object sender, RoutedEventArgs e)
         {
-            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            isChecking = false;
+            iter = 0;
+            breakDownPanel.Visibility = Visibility.Hidden;
+            checkingTheEquipment.Visibility = Visibility.Hidden;
             writeOnTrainPanel.Visibility = Visibility.Hidden;
             writeOffTrainPanel.Visibility = Visibility.Hidden;
             DelTrainPanel.Visibility = Visibility.Hidden;
@@ -648,7 +665,7 @@ namespace TrainBook
                 int TrainId = int.Parse(NewTrainIdTxb.Text);
 
                 Train newTrain = new Train(TrainId);
-                newTrain.isInRoute(AllRoutesList);
+                newTrain.isInRoute(AllActiveRoutesList);
                 foreach (Train train in AllTrainsList)
                 {
                     if (train.Id == TrainId)
@@ -679,7 +696,10 @@ namespace TrainBook
 
         private void DeleteTrain_Click(object sender, RoutedEventArgs e)
         {
-            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            isChecking = false;
+            iter = 0;
+            breakDownPanel.Visibility = Visibility.Hidden;
+            checkingTheEquipment.Visibility = Visibility.Hidden;
             writeOnTrainPanel.Visibility = Visibility.Hidden;
             writeOffTrainPanel.Visibility = Visibility.Hidden;
             DelTrainNotificationTb.Visibility = Visibility.Hidden;
@@ -765,11 +785,13 @@ namespace TrainBook
 
         private void WOTrain_Click(object sender, RoutedEventArgs e)
         {
-            WOnTrainIdTxb.Clear();
+            isChecking = false;
+            iter = 0;
+            WOTrainIdTxb.Clear();
             isBrokenTrainChB.IsChecked = false;
             breakdownDescPanel.Visibility = Visibility.Hidden;
             breakDownPanel.Visibility = Visibility.Hidden;
-            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            checkingTheEquipment.Visibility = Visibility.Hidden;
             writeOnTrainPanel.Visibility = Visibility.Hidden;
             writeOffTrainPanel.Visibility = Visibility.Visible;
             WOTrainNotificationTb1.Visibility = Visibility.Hidden;
@@ -802,7 +824,7 @@ namespace TrainBook
                         if (WOTrain.InRoute)
                         {
                             isInRoute = true;
-                            WOTrainNotificationTb1.Text = "Поезд не может быть списан т.к. находится в рейсе!";
+                            WOTrainNotificationTb1.Text = "Поезд находится в рейсе!";
                             WOTrainNotificationTb1.Visibility = Visibility.Visible;
                             ClearAllTxb();
                         }
@@ -826,7 +848,8 @@ namespace TrainBook
                 }
                 else
                 {
-                    WOTrainNotificationTb1.Text = "Поезд с данным id отсутствует в системе!";
+                    WOTrainNotificationTb1.Text = "Поезд с данным id отсутствует в системе!"; 
+                    
                     WOTrainNotificationTb1.Visibility = Visibility.Visible;
                     ClearAllTxb();
                 }
@@ -843,7 +866,9 @@ namespace TrainBook
         {
             WOTrainNotificationTb1.Visibility = Visibility.Hidden;
             BOTrain_Warning.Visibility = Visibility.Hidden;
-            int TrainId = int.Parse(WOTrainIdTxb.Text);
+            int TrainId = 0;
+            if (isChecking) TrainId = AllTrainsList[iter].Id;
+            else TrainId = int.Parse(WOTrainIdTxb.Text);
             if (breakDownDescTxb.Text != "")
             {
                 string Desc = breakDownDescTxb.Text;
@@ -853,7 +878,7 @@ namespace TrainBook
                     {
                         train.TechnicalCondition = false;
                         train.dateOfDebiting = DateTime.Now;
-                        train.breakdownDesc = Desc;
+                        train.DescriptionOfCondition = "Cписан. " + Desc;
                         WOTrainNotificationTb2.Visibility = Visibility.Visible;
                     }
                 }
@@ -869,8 +894,11 @@ namespace TrainBook
 
         private void writeOnTrain_Click(object sender, RoutedEventArgs e)
         {
-
-            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            isChecking = false;
+            iter = 0;
+            breakDownPanel.Visibility = Visibility.Hidden;
+            breakdownDescPanel.Visibility = Visibility.Hidden;
+            checkingTheEquipment.Visibility = Visibility.Hidden;
             writeOnTrainPanel.Visibility = Visibility.Visible;
             writeOffTrainPanel.Visibility = Visibility.Hidden;
             WOnTrainNotificationTb.Visibility = Visibility.Hidden;
@@ -897,7 +925,7 @@ namespace TrainBook
                     {
                         isFounded = true;
                         WOnTrain.TechnicalCondition = true;
-                        WOnTrain.breakdownDesc = "";
+                        WOnTrain.DescriptionOfCondition = "В простое";
                         WOnTrain.dateOfDebiting = DateTime.MinValue;
                         WOnTrainNotificationTb.Text = "Поезд восстановлен!";
                         break;
@@ -918,15 +946,73 @@ namespace TrainBook
         }
         #endregion
 
-        #region New standarts for trains
-
-        private void NSTrain_Click(object sender, RoutedEventArgs e)
+        #region Checking all trains
+        private void ScipTrain_Click(object sender, RoutedEventArgs e)
         {
+            if (iter + 1 < AllTrainsList.Count)
+            {
+                iter++;
+                breakDownPanel.Visibility = Visibility.Hidden;
+                breakdownDescPanel.Visibility = Visibility.Hidden;
+                isBrokenTrainChB.IsChecked = false;
+                numTB.Text = "Поезд №" + (iter + 1);
+                IdTB.Text = "Id - " + AllTrainsList[iter].Id;
+                CondTB.Text = "Состояние: " + AllTrainsList[iter].DescriptionOfCondition;
+                
+                
+            }
+            else
+            {
+                CheckTrainNot.Text = "Это последний поезд из списка";
+                CheckTrainNot.Visibility = Visibility.Visible;
+            }
+                
+
+        }
+
+        private void CheckTrainBtn_Click(object sender, RoutedEventArgs e)
+        {
+            CheckTrainNot.Visibility = Visibility.Hidden;
+            
+
+
+
+            bool alreadyWO = false;
+            bool isInRoute = false;
+            if (!AllTrainsList[iter].TechnicalCondition)
+            {
+                alreadyWO = true;
+                CheckTrainNot.Text = "Поезд уже списан!";
+                CheckTrainNot.Visibility = Visibility.Visible;
+            }
+            if (AllTrainsList[iter].InRoute)
+            {
+                isInRoute = true;
+                CheckTrainNot.Text = "Нельзя списать поезд т.к. он находится в рейсе!";
+                CheckTrainNot.Visibility = Visibility.Visible;
+            }
+            if ((alreadyWO)|| (isInRoute)) return;
+
+            infoTb.Text = "Id - " + AllTrainsList[iter].Id;
+            breakDownPanel.Visibility = Visibility.Visible;
+            BOTrain_Warning.Visibility = Visibility.Hidden;
+            WOTrainNotificationTb2.Visibility = Visibility.Hidden;
+
+
+
+        }
+        private void CheckTrain_Click(object sender, RoutedEventArgs e)
+        {
+
+            BOTrain_Warning.Visibility = Visibility.Hidden;
+            WOTrainNotificationTb2.Visibility = Visibility.Hidden;
+            iter = 0;
+            breakDownPanel.Visibility = Visibility.Hidden;
+            breakdownDescPanel.Visibility = Visibility.Hidden;
             NewTrain_Warning.Visibility = Visibility.Hidden;
-            NewStandarsTrainPanel.Visibility = Visibility.Visible;
+            checkingTheEquipment.Visibility = Visibility.Visible;
             writeOnTrainPanel.Visibility = Visibility.Hidden;
             writeOffTrainPanel.Visibility = Visibility.Hidden;
-            NSTrainNotificationTb.Visibility = Visibility.Hidden;
             DelTrainPanel.Visibility = Visibility.Hidden;
             NewTrainPanel.Visibility = Visibility.Hidden;
             NewRoutPanel.Visibility = Visibility.Hidden;
@@ -934,23 +1020,31 @@ namespace TrainBook
             ActualRoutesTable.Visibility = Visibility.Hidden;
             SortRoutPanel.Visibility = Visibility.Hidden;
             DeleteRoutPanel.Visibility = Visibility.Hidden;
-        }
-
-        private void NSTrainBtn_click(object sender, RoutedEventArgs e)
-        {
-            NSTrainNotificationTb.Visibility = Visibility.Hidden;
-            NSTrain_Warning.Visibility = Visibility.Hidden;
-            if (NSTrainSpeedTxb.Text != "")
+            CheckTrainNot.Visibility = Visibility.Hidden;
+            if (AllTrainsList.Count == 0)
             {
-                ClearAllTxb();
-                NSTrainNotificationTb.Visibility = Visibility.Visible;
+                isChecking = false;
+                numTB.Text ="Поезда отсутствуют!";
+                IdTB.Text = "Добавьте новые поезда через меню";
+                CondTB.Text = "";
+                
             }
             else
             {
-                NSTrain_Warning.Visibility = Visibility.Visible;
+                isChecking = true;
+                numTB.Text = "Поезд №1";
+                IdTB.Text = "Id - " + AllTrainsList[0].Id;
+                if (!AllTrainsList[iter].TechnicalCondition) CondTB.Text = "Состояние: списан. " + AllTrainsList[iter].DescriptionOfCondition;
+                else
+                {
+                    if (AllTrainsList[iter].InRoute) CondTB.Text = "Состояние: в рейсе";
+                    else CondTB.Text = "Состояние: в простое";
+                }
+               
             }
-
+            
         }
+
         #endregion
 
         //Очистка всех текстбоксов главного окна
@@ -978,7 +1072,10 @@ namespace TrainBook
         }
         private void backToTableBtn_Click(object sender, RoutedEventArgs e)
         {
-            NewStandarsTrainPanel.Visibility = Visibility.Hidden;
+            isChecking = false;
+            iter = 0;
+            breakDownPanel.Visibility = Visibility.Hidden;
+            checkingTheEquipment.Visibility = Visibility.Hidden;
             writeOnTrainPanel.Visibility = Visibility.Hidden;
             writeOffTrainPanel.Visibility = Visibility.Hidden;
             DelTrainPanel.Visibility = Visibility.Hidden;
@@ -989,6 +1086,8 @@ namespace TrainBook
             NewRoutPanel.Visibility = Visibility.Hidden;
             DeleteRoutPanel.Visibility = Visibility.Hidden;
         }
+
+
 
 
 

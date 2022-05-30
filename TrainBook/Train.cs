@@ -11,7 +11,7 @@ namespace TrainBook
         public int Id { get; set; }
         public bool InRoute { get; set; }
         public bool TechnicalCondition { get; set; }
-        public string breakdownDesc { get; set; }
+        public string DescriptionOfCondition { get; set; }
         public DateTime dateOfDebiting { get; set; }
         public Train(int id)
         {
@@ -32,6 +32,15 @@ namespace TrainBook
                 }
             }
             if (!isInRoute) InRoute = false;
+        }
+       public void DetermineState()
+        {
+            if (DescriptionOfCondition == null)
+            {
+                if (InRoute) DescriptionOfCondition = "В рейсе";
+                if (!TechnicalCondition) DescriptionOfCondition = "Списан. ";
+                if ((!InRoute) && (TechnicalCondition)) DescriptionOfCondition = "В простое.";
+            }
         }
     }
 }
