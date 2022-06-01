@@ -133,7 +133,7 @@
                            MouseEnter="Header_Mouse_Enter" MouseLeave="Header_Mouse_Leave" 
                           
                                    MouseUp="ButtonUp" MouseDown="Open_TrainTable"/>
-                            <Label Content="Оповещения" Style="{StaticResource ButtonHead}" 
+                            <Label x:Name="NoteInfo"  Content="Оповещения" Style="{StaticResource ButtonHead}" 
                                    MouseEnter="Header_Mouse_Enter"
                            MouseLeave="Header_Mouse_Leave"
                            

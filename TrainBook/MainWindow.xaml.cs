@@ -175,7 +175,7 @@ namespace TrainBook
                         case 0:
                             {
                                 if (iter > 2) throw new Exception();
-                                if (dateStr[iter] != '/')
+                                if (dateStr[iter] != '.')
                                 {
                                     tmp += dateStr[iter];
                                 }
@@ -191,7 +191,7 @@ namespace TrainBook
                         case 1:
                             {
                                 if (iter > 7) throw new Exception();
-                                if (dateStr[iter] != '/')
+                                if (dateStr[iter] != '.')
                                 {
                                     tmp += dateStr[iter];
                                 }
@@ -351,7 +351,7 @@ namespace TrainBook
         //Запрет на ввод лишних символов в поля с датой и временем
         private void DataPick_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            if (!(Char.IsDigit(e.Text, 0) || (e.Text == ".") || (e.Text == "/") || (e.Text == ":")))
+            if (!(Char.IsDigit(e.Text, 0) || (e.Text == ".") || (e.Text == ":")))
             {
                 e.Handled = true;
             }
@@ -931,7 +931,8 @@ namespace TrainBook
                         train.DescriptionOfCondition = "Cписан. " + Desc;
                         Train Etrain = new Train();
                         Etrain.Clone(train);
-                        Container.EventsList.Add(Etrain);
+                        Container.EventsList.AddFirst(Etrain);
+                        NoteInfo.Content = "Новые оповещения!";
                         WOTrainNotificationTb2.Visibility = Visibility.Visible;
                         breakDownDescTxb.Clear();
                     }
@@ -983,7 +984,8 @@ namespace TrainBook
                         WOnTrain.dateOfDebiting = DateTime.Now;
                         Train Etrain = new Train();
                         Etrain.Clone(WOnTrain);
-                        Container.EventsList.Add(Etrain);
+                        Container.EventsList.AddFirst(Etrain);
+                        NoteInfo.Content = "Новые оповещения!";
                         WOnTrain.DescriptionOfCondition = "В простое";
                         WOnTrain.dateOfDebiting = DateTime.MinValue;
                         WOnTrainNotificationTb.Text = "Поезд восстановлен!";
@@ -1216,6 +1218,7 @@ namespace TrainBook
             this.Visibility = Visibility.Hidden;
             Container.getData(AllRoutesList, AllTrainsList);
             w.ShowDialog();
+            NoteInfo.Content = "Оповещения";
             WindowActionAnalysis();
         }
         #endregion

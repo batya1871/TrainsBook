@@ -68,18 +68,18 @@ namespace TrainBook
             }
         }
 
-        public BindingList<Train> LoadEventsList()
+        public LinkedList<Train> LoadEventsList()
         {
             var fileExists = File.Exists(EventPath);
             if (!fileExists)
             {
                 File.CreateText(EventPath).Dispose();
-                return new BindingList<Train>();
+                return new LinkedList<Train>();
             }
             using (var reader = File.OpenText(EventPath))
             {
                 var fileText = reader.ReadToEnd();
-                return JsonConvert.DeserializeObject<BindingList<Train>>(fileText);
+                return JsonConvert.DeserializeObject<LinkedList<Train>>(fileText);
             }
 
         }

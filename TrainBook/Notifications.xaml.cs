@@ -121,7 +121,7 @@ namespace TrainBook
                         case 0:
                             {
                                 if (iter > 2) throw new Exception();
-                                if (dateStr[iter] != '/')
+                                if (dateStr[iter] != '.')
                                 {
                                     tmp += dateStr[iter];
                                 }
@@ -137,7 +137,7 @@ namespace TrainBook
                         case 1:
                             {
                                 if (iter > 7) throw new Exception();
-                                if (dateStr[iter] != '/')
+                                if (dateStr[iter] != '.')
                                 {
                                     tmp += dateStr[iter];
                                 }
@@ -187,7 +187,7 @@ namespace TrainBook
 
         private void DataPick_PreviewTextInput(object sender, TextCompositionEventArgs e)
         {
-            if (!(Char.IsDigit(e.Text, 0)  || (e.Text == "/")))
+            if (!(Char.IsDigit(e.Text, 0)  || (e.Text == ".")))
             {
                 e.Handled = true;
             }
@@ -291,6 +291,12 @@ namespace TrainBook
         private void BackToMainWindow(object sender, MouseButtonEventArgs e)
         {
             this.Close();
+        }
+
+        private void ClearBtn_Click(object sender, RoutedEventArgs e)
+        {
+            Container.EventsList = new LinkedList<Train>();
+            NotTable.ItemsSource = Container.EventsList;
         }
     }
 }

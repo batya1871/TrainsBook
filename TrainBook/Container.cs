@@ -9,19 +9,21 @@ namespace TrainBook
     {
         public static BindingList<Route> RoutesList;
         public static  BindingList<Train> TrainsList;
-        public static BindingList<Train> EventsList;
+        public static LinkedList<Train> EventsList;
 
+       
 
         //0 = true - закрыть приложение
         //1 = true - открыть список поездов
         //2 = true - открыть оповещения
         //3 = true - открыть архив маршрутов
         public static bool[] WindowData = new bool[4];
+        public static bool NewNotes { get; set; } = false;
         static Container()
         {
             RoutesList = new BindingList<Route>();
             TrainsList = new BindingList<Train>();
-            EventsList = new BindingList<Train>();
+            EventsList = new LinkedList<Train>();
 
             for (int i = 0; i < 4; i++)
             {
