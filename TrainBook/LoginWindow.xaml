@@ -76,7 +76,7 @@
                     <TextBlock Text="Войти" Margin="46,0,0,0" FontSize="12" Foreground="#FF4D4D4D"/>
                 </Button>
             </StackPanel>
-            <StackPanel HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0" Name="RegistrationZone">
+            <StackPanel Visibility="Visible" HorizontalAlignment="Center" VerticalAlignment="Center" Margin="0,0,0,0" Name="RegistrationZone">
                 <TextBlock Text="Регистрация" Foreground="#FF4C394B" FontSize="33" HorizontalAlignment="Center"/>
                 <TextBox x:Name="RegistrationTxB" Style="{StaticResource TxB}"  Margin="0,20,0,0" />
                 <PasswordBox x:Name="PassWord1TxB" Style="{StaticResource PsB}" Margin="0,15,0,0" KeyUp="password_KeyUp" KeyDown="password_KeyDown" />

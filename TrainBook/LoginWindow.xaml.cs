@@ -175,9 +175,8 @@ namespace TrainBook
             {
                 if (PassWord1TxB.Password == PassWord2TxB.Password)
                 {
-
-
                     User user = new User(RegistrationTxB.Text, PassWord2TxB.Password);
+                    
                     if (AllUsers.FindUser(user) == null)
                     {
                         AllUsers.RemoveMark();

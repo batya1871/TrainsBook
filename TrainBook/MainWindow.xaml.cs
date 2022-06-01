@@ -6,7 +6,6 @@ using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Shapes;
 
 namespace TrainBook
 {
@@ -17,11 +16,12 @@ namespace TrainBook
     {
         private readonly string routePath = $"{Environment.CurrentDirectory}\\Route.json";
         private readonly string trainPath = $"{Environment.CurrentDirectory}\\Train.json";
+        private readonly string eventsPath = $"{Environment.CurrentDirectory}\\Events.json";
         public BindingList<Route> AllRoutesList;
         private BindingList<Route> AllActiveRoutesList = new BindingList<Route>();
         public BindingList<Train> AllTrainsList;
         private FileIOService fileIOService;
-        static private User activeUser = new User();
+        static private User activeUser;
         static int iter = 0;
         static bool isChecking = false;
         public MainWindow()
@@ -39,10 +39,13 @@ namespace TrainBook
             {
                 try
                 {
+                    
                     DataForSavingUsers data = (DataForSavingUsers)formatter.Deserialize(fs);
                     activeUser = data.MarkedUser;
                     if (activeUser != null) activeUser.Mark = true;
                     AllUsers.Users = data.Users;
+
+                    
                 }
                 catch (Exception)
                 {
@@ -50,26 +53,60 @@ namespace TrainBook
                 }
 
             }
-            //Указываем имя пользователя и открываем правый сайдбар
-            if (activeUser != null)
+        }
+
+        void ActiveUserCheck()
+        {
+            if (activeUser?.Name != null)
             {
                 Login_label.Content = activeUser.Name;
-             
+                ActualRouteslbl.Visibility = Visibility.Visible;
+                ActualRoutesTable.Visibility = Visibility.Visible;
+                NoUserslbl.Visibility = Visibility.Hidden;
+                OtherTablePanel.Visibility = Visibility.Visible;
+                UserArea.Visibility = Visibility.Visible;
+                if (activeUser.Post == Posts.Admin)
+                {
+                    HeadArea.Visibility = Visibility.Visible;
+                    AdminArea.Visibility = Visibility.Visible;
+                }
+                else if (activeUser.Post == Posts.Head)
+                {
+                    HeadArea.Visibility = Visibility.Visible;
+                    AdminArea.Visibility = Visibility.Hidden;
+                }
+                else
+                {
+                    HeadArea.Visibility = Visibility.Hidden;
+                    AdminArea.Visibility = Visibility.Hidden;
+                }
+
             }
             else
             {
-               
+                
+                Login_label.Content = "Войти...";
+                backToTableBtn_Click(null, null);
+                ActualRouteslbl.Visibility = Visibility.Hidden;
+                ActualRoutesTable.Visibility = Visibility.Hidden;
+                NoUserslbl.Visibility = Visibility.Visible;
+                OtherTablePanel.Visibility = Visibility.Hidden;
+                UserArea.Visibility = Visibility.Hidden;
+
+
             }
         }
-
         private void Window_Loaded(object sender, RoutedEventArgs e)
         {
+            DeserializedUsersData();
             double test = Window.HeightProperty.GetHashCode();
-            fileIOService = new FileIOService(routePath, trainPath);
+            fileIOService = new FileIOService(routePath, trainPath, eventsPath);
             try
             {
                 AllRoutesList = fileIOService.LoadAllRoots();
                 AllTrainsList = fileIOService.LoadAllTrains();
+                Container.EventsList = fileIOService.LoadEventsList();
+
             }
             catch (Exception ex)
             {
@@ -108,9 +145,10 @@ namespace TrainBook
             {
                 AllTrainsList = new BindingList<Train>();
             }
-
+            Container.getData(AllRoutesList, AllTrainsList);
             ActualRoutesTable.ItemsSource = AllActiveRoutesList;
 
+            ActiveUserCheck();
         }
         #endregion
 
@@ -272,6 +310,7 @@ namespace TrainBook
             }
             fileIOService.SaveAllRoute(AllRoutesList);
             fileIOService.SaveAllTrains(AllTrainsList);
+            fileIOService.SaveEventsList(Container.EventsList);
             Application.Current.Shutdown();
         }
         private void Mouse_Enter_Close(object sender, RoutedEventArgs e)
@@ -295,15 +334,7 @@ namespace TrainBook
             //Нахождение вбитого пользователя
             activeUser = AllUsers.FindMarkedUser();
             //При нахождении вписываем его ФИО в правый верхний угол и даем доступ к правому сайдбару
-            if (activeUser != null)
-            {
-                Login_label.Content = activeUser.Name;
-            }
-            //Иначе возвращаемся к  значениям по умолчанию
-            else
-            {
-                Login_label.Content = "Войти...";
-            }
+            ActiveUserCheck();
         }
 
         private void ButtonUp(object sender, MouseButtonEventArgs e)
@@ -382,11 +413,17 @@ namespace TrainBook
                             TrainInRoute = true;
                             NotificationTb.Text = "Поезд уже находится в рейсе!";
                         }
-                        if (train.TechnicalCondition == false)
+                        else if (train.TechnicalCondition == false)
                         {
                             TrainBorken = true;
                             NotificationTb.Text = "Поезд списан с эксплуатации!";
                         }
+                        else
+                        {
+                            train.InRoute = true;
+                            train.DetermineState();
+                        }
+
                         break;
                     }
                 }
@@ -666,6 +703,7 @@ namespace TrainBook
 
                 Train newTrain = new Train(TrainId);
                 newTrain.isInRoute(AllActiveRoutesList);
+                newTrain.DetermineState();
                 foreach (Train train in AllTrainsList)
                 {
                     if (train.Id == TrainId)
@@ -724,6 +762,18 @@ namespace TrainBook
                 {
                     if ((DelTrain.Id == TrainId))
                     {
+                        foreach (Route DelRoute in AllRoutesList)
+                        {
+                            if (DelRoute.TrainsId == TrainId) 
+                            {
+                                AllRoutesList.Remove(DelRoute);
+                                if ((DelRoute.IsActiveNow == true))
+                                {
+                                    AllActiveRoutesList.Remove(DelRoute);
+                                }
+                                break;
+                            }
+                        }
                         isFounded = true;
                         AllTrainsList.Remove(DelTrain);
                         DelNotification.Text = "Поезд успешно удален!";
@@ -879,7 +929,11 @@ namespace TrainBook
                         train.TechnicalCondition = false;
                         train.dateOfDebiting = DateTime.Now;
                         train.DescriptionOfCondition = "Cписан. " + Desc;
+                        Train Etrain = new Train();
+                        Etrain.Clone(train);
+                        Container.EventsList.Add(Etrain);
                         WOTrainNotificationTb2.Visibility = Visibility.Visible;
+                        breakDownDescTxb.Clear();
                     }
                 }
             }
@@ -925,6 +979,11 @@ namespace TrainBook
                     {
                         isFounded = true;
                         WOnTrain.TechnicalCondition = true;
+                        WOnTrain.DescriptionOfCondition = "Поезд введен в эскплуатацию.";
+                        WOnTrain.dateOfDebiting = DateTime.Now;
+                        Train Etrain = new Train();
+                        Etrain.Clone(WOnTrain);
+                        Container.EventsList.Add(Etrain);
                         WOnTrain.DescriptionOfCondition = "В простое";
                         WOnTrain.dateOfDebiting = DateTime.MinValue;
                         WOnTrainNotificationTb.Text = "Поезд восстановлен!";
@@ -1034,11 +1093,11 @@ namespace TrainBook
                 isChecking = true;
                 numTB.Text = "Поезд №1";
                 IdTB.Text = "Id - " + AllTrainsList[0].Id;
-                if (!AllTrainsList[iter].TechnicalCondition) CondTB.Text = "Состояние: списан. " + AllTrainsList[iter].DescriptionOfCondition;
+                if (!AllTrainsList[iter].TechnicalCondition) CondTB.Text = "Состояние: Списан. " + AllTrainsList[iter].DescriptionOfCondition;
                 else
                 {
-                    if (AllTrainsList[iter].InRoute) CondTB.Text = "Состояние: в рейсе";
-                    else CondTB.Text = "Состояние: в простое";
+                    if (AllTrainsList[iter].InRoute) CondTB.Text = "Состояние: В рейсе";
+                    else CondTB.Text = "Состояние: В простое";
                 }
                
             }
@@ -1092,10 +1151,73 @@ namespace TrainBook
 
 
 
-        #endregion
 
         #endregion
 
-        
+        #endregion
+
+        #region Open Other Windows
+        private void WindowActionAnalysis()
+        {
+            bool isMainWindow = true;
+            foreach (bool flag in Container.WindowData)
+            {
+                if (flag)
+                {
+                    isMainWindow = false;
+                }
+            }
+            if (isMainWindow) this.Visibility = Visibility.Visible;
+            else
+            {
+                if (Container.WindowData[0])
+                {
+                    Container.ClearWD();
+                    Close_Click(null, null);
+                }
+                if (Container.WindowData[1])
+                {
+                    Container.ClearWD();
+                    Open_TrainTable(null, null);
+                }
+                if (Container.WindowData[2])
+                {
+                    Container.ClearWD();
+                    Open_NotTabl(null, null);
+                }
+                if (Container.WindowData[3])
+                {
+                    Container.ClearWD();
+                    Open_RoutesTable(null, null);
+                }
+            }
+        }
+        private void Open_TrainTable(object sender, MouseButtonEventArgs e)
+        {
+            TrainTable w = new TrainTable();
+            Container.getData(AllRoutesList, AllTrainsList);
+            this.Visibility = Visibility.Hidden;
+            w.ShowDialog();
+            WindowActionAnalysis();
+        }
+
+        private void Open_RoutesTable(object sender, MouseButtonEventArgs e)
+        {
+            RouteTable w = new RouteTable();
+            this.Visibility = Visibility.Hidden;
+            Container.getData(AllRoutesList, AllTrainsList);
+            w.ShowDialog();
+            WindowActionAnalysis();
+        }
+
+        private void Open_NotTabl(object sender, MouseButtonEventArgs e)
+        {
+            Notifications w = new Notifications();
+            this.Visibility = Visibility.Hidden;
+            Container.getData(AllRoutesList, AllTrainsList);
+            w.ShowDialog();
+            WindowActionAnalysis();
+        }
+        #endregion
     }
 }

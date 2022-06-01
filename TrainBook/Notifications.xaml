@@ -1,11 +1,11 @@
-﻿<Window x:Class="TrainBook.TrainTable"
+﻿<Window x:Class="TrainBook.Notifications"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:local="clr-namespace:TrainBook"
-        WindowState="Maximized"
         WindowStartupLocation="CenterScreen"
+         WindowState="Maximized"
         AllowsTransparency="True"
         WindowStyle="None"
         Background="#FFBEBEBE"
@@ -120,14 +120,14 @@
                            MouseEnter="Header_Mouse_Enter" MouseLeave="Header_Mouse_Leave"
                           
                                    MouseUp="ButtonUp" MouseDown="BackToMainWindow"/>
-                            <Label Content="Оповещения" Style="{StaticResource ButtonHead}" 
+                            <Label Content="Список поездов" Style="{StaticResource ButtonHead}" 
                                    MouseEnter="Header_Mouse_Enter"
                            MouseLeave="Header_Mouse_Leave"
                            
-                           MouseUp="ButtonUp" MouseDown="RouteTable_MouseDown"
+                           MouseUp="ButtonUp" MouseDown="TrainTabl_MouseDown"
                            />
                             <Label Content="Архив маршрутов" Style="{StaticResource ButtonHead}"
-                           MouseEnter="Header_Mouse_Enter" MouseLeave="Header_Mouse_Leave" MouseDown="RouteTable_MouseDown" 
+                           MouseEnter="Header_Mouse_Enter" MouseLeave="Header_Mouse_Leave" MouseDown="RouteTabl_MouseDown" 
                                    
                            />
 
@@ -139,26 +139,22 @@
 
 
                 </DockPanel>
-                <StackPanel  Visibility="Visible" x:Name="SortTrainPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"  Orientation="Vertical">
-                    <TextBlock Margin="5,0,0,0" Text="Id поезда:" FontSize="16"/>
-                    <TextBox  Margin="5,0,0,0" HorizontalAlignment="Left" PreviewTextInput="Train_PreviewTextInput" x:Name = "IdTxb" MaxWidth="130" MinWidth="100"/>
-                    <TextBlock Margin="5,0,0,0" Text="Состояние:" FontSize="16"/>
-                    <StackPanel Orientation="Vertical" Margin="10,5,0,0" x:Name="SortPanel">
+                <StackPanel  Visibility="Visible" x:Name="SortNotPanel" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"  Orientation="Vertical">
+                    <TextBlock Margin="5,0,0,0" Text="Дата:" FontSize="16"/>
+                    <TextBox  Margin="5,0,0,0" HorizontalAlignment="Left" PreviewTextInput="DataPick_PreviewTextInput" x:Name = "DateTxb" MaxWidth="160" MinWidth="100"/>
+                    <TextBlock Margin="5,0,0,0" Text="Режим сортировки:" FontSize="16"/>
+                    <StackPanel Orientation="Vertical" Margin="10,5,0,0" >
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontSize="14" Text="В простое" Margin="0,-3,5,0"/>
-                            <CheckBox Style="{StaticResource CheckBox}" Margin="2,0,0,0" IsChecked="True"  Name="DontWorkChB" Click="ChB_Checked" />
+                            <TextBlock FontSize="14" Text="Оповещения только в эту дату" Margin="0,-3,5,0"/>
+                            <CheckBox Style="{StaticResource CheckBox}" Margin="2,0,0,0" IsChecked="True"  Name="ThisDate" Click="ChB_Checked" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontSize="14" Text="Списан" Margin="0,-3,5,0"/>
-                            <CheckBox Style="{StaticResource CheckBox}"  Margin="19,0,0,0"  Name="BrokenChB" Click="ChB_Checked" />
+                            <TextBlock FontSize="14" Text="Оповещения до этой даты включительно" Margin="0,-3,5,0"/>
+                            <CheckBox Style="{StaticResource CheckBox}"  Margin="19,0,0,0"  Name="AfterDate" Click="ChB_Checked" />
                         </StackPanel>
                         <StackPanel Orientation="Horizontal">
-                            <TextBlock FontSize="14" Text="В рейсе" Margin="0,-3,5,0"/>
-                            <CheckBox Style="{StaticResource CheckBox}"  Margin="17,1,0,0"  Name="inRouteChB" Click="ChB_Checked" />
-                        </StackPanel>
-                        <StackPanel Orientation="Horizontal">
-                            <TextBlock FontSize="14" Text="Без сост." Margin="0,-3,5,0"/>
-                            <CheckBox Style="{StaticResource CheckBox}"  Margin="11,1,0,0"  Name="byThePleaChB" Click="ChB_Checked" />
+                            <TextBlock FontSize="14" Text="Оповещения после этой даты включительно" Margin="0,-3,5,0"/>
+                            <CheckBox Style="{StaticResource CheckBox}"  Margin="17,1,0,0"  Name="BeforeDate" Click="ChB_Checked" />
                         </StackPanel>
                     </StackPanel>
                     <Button HorizontalAlignment="Left" Style="{StaticResource Button_task}" Height="20" Margin="5,5,0,0"  Width="190"  Name="SortBtn" Click="SortBtn_Click">
@@ -172,15 +168,17 @@
                     </Button>
                     <TextBlock x:Name="notification" Visibility="Hidden"  Margin="5,0,5,0" FontSize="16" Text="Сортировка завершена"/>
                 </StackPanel>
-                <Label  Grid.Row="1" Grid.Column="1" Visibility="Visible" x:Name="TrainsLbl" Background="White" Grid.ColumnSpan="2">
+
+                <Label  Grid.Row="1" Grid.Column="1" Visibility="Hidden" x:Name="NotificationLbl" Background="White" Grid.ColumnSpan="2">
                     <Label.Content>
-                        <TextBlock Text="Поезда"  FontSize="18" Margin="0,-9,0,0"/>
+                        <TextBlock Text="Уведомления"  FontSize="18" Margin="0,-9,0,0"/>
                     </Label.Content>
                 </Label>
-                <DataGrid  Visibility="Visible" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"  FontSize="16" Margin="0,20,0,0"  AutoGenerateColumns="False" x:Name="TrainsTable" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False">
+                <DataGrid  Visibility="Hidden" Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="2"  FontSize="16" Margin="0,20,0,0"  AutoGenerateColumns="False" x:Name="NotTable" CanUserDeleteRows="False" CanUserAddRows="False" CanUserResizeRows="False">
                     <DataGrid.Columns>
+                        <DataGridTextColumn IsReadOnly="True"  Binding="{Binding Path = dateOfDebiting }" Header="Дата события" Width="180"/>
+                        <DataGridTextColumn IsReadOnly="True"  Binding="{Binding Path = DescriptionOfCondition }" Header="Состояние" Width="500"/>
                         <DataGridTextColumn IsReadOnly="True"  Binding="{Binding Path = Id }" Header="Id поезда" Width="180"/>
-                        <DataGridTextColumn IsReadOnly="True"  Binding="{Binding Path = DescriptionOfCondition }" Header="Состояние" Width="600"/>
                     </DataGrid.Columns>
                 </DataGrid>
 
@@ -208,9 +206,9 @@
                                 HorizontalAlignment="Right"
                                 VerticalAlignment="Top">
                         <Button  Style="{StaticResource Button_task}"  Margin="0,5,2,5" Width="220"  Name="Open_Sort" Click="Open_Sort_Click" >
-                            <TextBlock Padding="40,0,0,0" Text="Сортировка поездов" Margin="1,0,0,0"/>
+                            <TextBlock Padding="40,0,0,0" Text="Сортировка cобытий" Margin="1,0,0,0"/>
                         </Button>
-                        
+
 
 
                     </StackPanel>

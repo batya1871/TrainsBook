@@ -46,6 +46,7 @@ namespace TrainBook
             Name = name;
             Password = password;
             Mark = false;
+            Post = Posts.User;
         }
 
     }

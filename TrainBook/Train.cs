@@ -13,10 +13,19 @@ namespace TrainBook
         public bool TechnicalCondition { get; set; }
         public string DescriptionOfCondition { get; set; }
         public DateTime dateOfDebiting { get; set; }
-        public Train(int id)
+        public Train(int id = -1)
         {
             Id = id;
             TechnicalCondition = true;
+        }
+
+        public void Clone(Train train)
+        {
+            Id = train.Id;
+            InRoute = train.InRoute;
+            TechnicalCondition = train.TechnicalCondition;
+            DescriptionOfCondition = train.DescriptionOfCondition;
+            dateOfDebiting = train.dateOfDebiting;
         }
 
        public void isInRoute(BindingList<Route> list)
@@ -27,6 +36,7 @@ namespace TrainBook
                 if (route.TrainsId == Id)
                 {
                     InRoute = true;
+                    DescriptionOfCondition = "В рейсе";
                     isInRoute = true;
                     break;
                 }
@@ -35,12 +45,10 @@ namespace TrainBook
         }
        public void DetermineState()
         {
-            if (DescriptionOfCondition == null)
-            {
                 if (InRoute) DescriptionOfCondition = "В рейсе";
-                if (!TechnicalCondition) DescriptionOfCondition = "Списан. ";
+                if ((!TechnicalCondition)&& (DescriptionOfCondition == null)) DescriptionOfCondition = "Списан ";
                 if ((!InRoute) && (TechnicalCondition)) DescriptionOfCondition = "В простое.";
-            }
+            
         }
     }
 }
